@@ -18,19 +18,7 @@ class SvgText extends DrawableShape {
     setHeight(value) { this._height = value; return this; }
     setFontSize(value) { this._fontSize = value; return this; }
     setText(value) { this._text = value; return this; }
-
-    onNotification(topic, data, context) {
-        if (data.token === 'Text') {
-            this.setText(data.value);
-        }
-
-        if (data.token === 'FontSize') {
-            this.setFontSize(data.value);
-        }
-
-        super.onNotification(topic, data, context);
-    }
-
+    
     drawImplementation() {
         this._element.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
         this._element.innerHTML = `

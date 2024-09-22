@@ -1,6 +1,5 @@
-class Drawable extends NotificationListener {
+class Drawable {
     constructor() {
-        super();
         this._isVisible = false;
     }
 
@@ -10,12 +9,5 @@ class Drawable extends NotificationListener {
 
     draw(map) {
         this._isVisible = true;
-    }
-
-    onNotification(topic, data, context) {
-        // context is the map in this case.
-        if( this._isVisible ) {
-            context.draw(this);
-        }
     }
 };

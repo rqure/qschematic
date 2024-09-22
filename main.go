@@ -18,7 +18,7 @@ func getDatabaseAddress() string {
 func getWebServiceAddress() string {
 	addr := os.Getenv("QDB_WEBSERVICE_ADDR")
 	if addr == "" {
-		addr = "0.0.0.0:20000"
+		addr = "0.0.0.0:20002"
 	}
 
 	return addr

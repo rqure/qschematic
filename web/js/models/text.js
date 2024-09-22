@@ -17,14 +17,6 @@ class Text extends Polygon {
     setDirection(value) { this._direction = value; return this; }
     setClassName(value) { this._className = value; return this; }
 
-    onNotification(topic, data, context) {
-        if (data.token === 'Text') {
-            this.setText(data.value);
-        }
-
-        super.onNotification(topic, data, context);
-    }
-
     drawImplementation() {
         const polygon = super.drawImplementation();
         polygon.bindTooltip(this.text, { permanent: true, direction: this.direction, className: this.className });
