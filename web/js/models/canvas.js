@@ -1,6 +1,6 @@
-class SimpleMap {
+class Canvas {
     constructor(id) {
-        this._map = L.map(id, {
+        this._implementation = L.map(id, {
             crs: L.CRS.Simple,
             zoomControl: false,
             attributionControl: false,
@@ -12,12 +12,14 @@ class SimpleMap {
         this._topRight = new Point();
     }
 
+    get implementation() { return this._implementation; }
+
     moveTo(point, zoom=0) {
-        this._map.setView([point.y, point.x], zoom);
+        this._implementation.setView([point.y, point.x], zoom);
     }
 
     draw(drawable) {
-        drawable.draw(this._map);
+        drawable.draw(this);
     }
 
     setBoundary(from, to) {
@@ -29,8 +31,8 @@ class SimpleMap {
             [to.y, to.x]
         ];
 
-        this._map.fitBounds(boundary);
-        this._map.setMaxBounds(boundary);
+        this._implementation.fitBounds(boundary);
+        this._implementation.setMaxBounds(boundary);
 
         return this;
     }

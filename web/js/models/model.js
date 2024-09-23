@@ -11,7 +11,7 @@ class Model extends Drawable {
     }
 
     get pane() { return this._pane; }
-
+    
     setPane(value) {
         this._pane = value;
 
@@ -47,11 +47,11 @@ class Model extends Drawable {
         super.erase();
     }
 
-    draw(map) {
-        super.draw();
+    draw(canvas) {
+        super.draw(canvas);
         
         this._shapes.forEach(shape => {
-            shape.draw(map);
+            shape.draw(canvas);
         });
     }
 };

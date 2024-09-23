@@ -32,16 +32,16 @@ class DrawableShape extends Drawable {
         super.erase();
     }
 
-    draw(map) {
+    draw(canvas) {
         this.erase();
-        super.draw(map);
+        super.draw(canvas);
         this._self = this.drawImplementation();
 
-        if (this._pane && !map.getPane(this._pane.name)) {
-            map.createPane(this._pane.name);
-            map.getPane(this._pane.name).style.zIndex = this._pane.level;
+        if (this._pane && !canvas.implementation.getPane(this._pane.name)) {
+            canvas.implementation.createPane(this._pane.name);
+            canvas.implementation.getPane(this._pane.name).style.zIndex = this._pane.level;
         }
 
-        this._self.addTo(map);
+        this._self.addTo(canvas.implementation);
     }
 };

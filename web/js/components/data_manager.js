@@ -1,0 +1,80 @@
+
+/**
+ * Used to manage the data from the database and provide it to the schematic (and models under it).
+ */
+class DataManager {
+    constructor(db) {
+        this._notificationTokens = [];
+        this._db = db;
+
+        this._db
+            .getEventManager()
+            .addEventListener(DATABASE_EVENTS.CONNECTED, this.__onDatabaseConnected.bind(this))
+            .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
+    }
+
+    __onDatabaseConnected() {
+        qInfo("[DataManager::__onDatabaseConnected] Connected to database.");
+        this._notificationTokens = [];
+        
+        this.findSchematic("home")
+            .then(schematic => {
+                
+            })
+            .catch(error => {
+                qError(`[DataManager::__onDatabaseConnected] ${error}`);
+            });
+    }
+
+    __onDatabaseDisconnected() {
+    }
+
+    findSchematic(schematicId) {
+        return this._db
+            .queryAllEntities("Schematic")
+            .then(result => {
+                let readRequests = result.entities.map(schematic => {
+                    return {
+                        id: schematic.getId(),
+                        field: "Identifier"
+                    }
+                });
+
+                return this._db.read(readRequests);
+            })
+            .then(readResults => {
+                readResults = readResults
+                    .map(result => {
+                        const protoClass = result.getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
+                        const value = protoClass.deserializeBinary(result.getValue().getValue_asU8()).getRaw();
+
+                        return {
+                            id: result.getId(),
+                            field: result.getField(),
+                            value: value
+                        };
+                    })
+                    .filter(result => result.value === schematicId);
+                
+                if (readResults.length === 0) {
+                    return Promise.reject("Schematic not found.");
+                }
+
+                return this._db.read([{
+                    id: readResults[0].id,
+                    field: "SourceFile"
+                }]);
+            })
+            .then(readResults => {
+                const protoClass = readResults[0].getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
+                const value = protoClass.deserializeBinary(readResults[0].getValue().getValue_asU8()).getRaw();
+                return fetch(value).then(res => res.blob())
+            })
+            .then(blob => {
+                return blob.text();
+            })
+            .catch(error => {
+                throw new Error(`[DataManager::findSchematic] ${error}`);
+            });
+    }
+}

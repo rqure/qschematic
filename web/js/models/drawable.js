@@ -7,7 +7,7 @@ class Drawable {
         this._isVisible = false;
     }
 
-    draw(map) {
+    draw(canvas) {
         this._isVisible = true;
     }
 };
