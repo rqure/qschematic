@@ -10,7 +10,10 @@ async function main() {
     database.runInBackground(true);
 
     const canvas = new Canvas('schematic');
-    canvas.setBoundary({x: 0, y: 0}, {x: 1000, y: 1000}).moveTo(map.center);
+    canvas
+        .setBoundary({x: 0, y: 0}, {x: 1000, y: 1000})
+        .moveTo(canvas.center);
 
     const schematic = new Schematic(canvas, database);
+    schematic.setIdentifer("home");
 }
