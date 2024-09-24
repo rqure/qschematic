@@ -4,7 +4,6 @@
  */
 class DataManager {
     constructor(db) {
-        this._notificationTokens = [];
         this._db = db;
 
         this._db
@@ -15,18 +14,28 @@ class DataManager {
 
     __onDatabaseConnected() {
         qInfo("[DataManager::__onDatabaseConnected] Connected to database.");
-        this._notificationTokens = [];
-        
-        this.findSchematic("home")
-            .then(schematic => {
-                
-            })
-            .catch(error => {
-                qError(`[DataManager::__onDatabaseConnected] ${error}`);
-            });
     }
 
     __onDatabaseDisconnected() {
+    }
+
+    listenForSourceChange(id, callback) {
+        this._db
+            .registerNotifications([{
+                id: id,
+                field: "SourceFile",
+            }], notification => {
+                const field = notification.getCurrent();
+                const protoClass = field.getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
+                const value = protoClass.deserializeBinary(field.getValue().getValue_asU8()).getRaw();
+                return fetch(value)
+                    .then(res => res.blob())
+                    .then(blob => blob.text())
+                    .then(source => callback(source));
+            })
+            .catch(error => {
+                qError(`[DataManager::listenForSourceChange] ${error}`);
+            });
     }
 
     findSchematic(schematicId) {
@@ -68,10 +77,10 @@ class DataManager {
             .then(readResults => {
                 const protoClass = readResults[0].getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
                 const value = protoClass.deserializeBinary(readResults[0].getValue().getValue_asU8()).getRaw();
-                return fetch(value).then(res => res.blob())
-            })
-            .then(blob => {
-                return blob.text();
+                return fetch(value)
+                    .then(res => res.blob())
+                    .then(blob => blob.text())
+                    .then(source => Promise.resolve([readResults[0].getId(), source]));
             })
             .catch(error => {
                 throw new Error(`[DataManager::findSchematic] ${error}`);

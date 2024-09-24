@@ -19,8 +19,12 @@ class Schematic {
 
         this._dataManager
             .findSchematic(this._identifier)
-            .then(schematic => {
-                this.setModel(eval(schematic));
+            .then((args) => {
+                const [id, source] = args;
+                this.setModel(eval(source));
+                this._dataManager.listenForSourceChange(id, source => {
+                    this.setModel(eval(source));
+                });
             })
             .catch(error => {
                 qError(`[Schematic::__onDatabaseConnected] ${error}`);
