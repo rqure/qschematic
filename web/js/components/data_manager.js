@@ -38,6 +38,50 @@ class DataManager {
             });
     }
 
+    findModels() {
+        return this._db
+            .queryAllEntities("SchematicModel")
+            .then(result => {
+                const readRequests = [];
+
+                result.entities.forEach(model => {
+                    read.push({
+                        id: model.getId(),
+                        field: "SourceFile"
+                    });
+                });
+
+                return this._db.read(readRequests);
+            })
+            .then(readResults => {
+                return Promise.all(readResults.reduce((accumulator, result) => {
+                    const protoClass = result.getValue().getTypeName().split('.').reduce((o, i) => o[i], proto);
+                    const id = result.getId();
+                    const value = protoClass.deserializeBinary(result.getValue().getValue_asU8()).getRaw();
+    
+                    accumulator.push(
+                        fetch(value)
+                            .then(res => res.blob())
+                            .then(blob => blob.text())
+                            .then(source => {
+                                return { id, source };
+                            })
+                    );
+    
+                    return accumulator;
+                }, []));
+            })
+            .then(resolvedSources => {
+                return resolvedSources.reduce((accumulator, { id, source }) => {
+                    accumulator[id] = source;
+                    return accumulator;
+                }, {});
+            })
+            .catch(error => {
+                throw new Error(`[DataManager::findModels] ${error}`);
+            });
+    }
+
     findSchematic(schematicId) {
         return this._db
             .queryAllEntities("Schematic")
@@ -80,7 +124,7 @@ class DataManager {
                 return fetch(value)
                     .then(res => res.blob())
                     .then(blob => blob.text())
-                    .then(source => Promise.resolve([readResults[0].getId(), source]));
+                    .then(source => [readResults[0].getId(), source]);
             })
             .catch(error => {
                 throw new Error(`[DataManager::findSchematic] ${error}`);

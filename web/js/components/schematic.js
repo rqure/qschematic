@@ -18,7 +18,17 @@ class Schematic {
         }
 
         this._dataManager
-            .findSchematic(this._identifier)
+            .findModels()
+            .then(models => {
+                console.log(models);
+                models.forEach(model => {
+                    this._dataManager.listenForSourceChange(model.getId(), source => {
+                        console.log(source);
+                        eval(source);
+                    });
+                });
+            })
+            .then(() => this._dataManager.findSchematic(this._identifier))
             .then((args) => {
                 const [id, source] = args;
                 this.setModel(eval(source));
