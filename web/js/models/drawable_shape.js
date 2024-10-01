@@ -7,6 +7,7 @@ class DrawableShape extends Drawable {
         this._color = 'red';
         this._fillColor = '#f03';
         this._fillOpacity = 0.5;
+        this._weight = 1;
         this._pane = null;
     }
 
@@ -20,6 +21,7 @@ class DrawableShape extends Drawable {
     setFillColor(value) { this._fillColor = value; return this; }
     setFillOpacity(value) { this._fillOpacity = value; return this; }
     setPane(value) { this._pane = value; return this; }
+    setWeight(value) { this._weight = value; return this; }
 
     drawImplementation() {}
 

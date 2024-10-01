@@ -124,7 +124,8 @@ class DataManager {
                 return fetch(value)
                     .then(res => res.blob())
                     .then(blob => blob.text())
-                    .then(source => [readResults[0].getId(), source]);
+                    .then(source => source.json())
+                    .then(source => [readResults[0].getId(), source])
             })
             .catch(error => {
                 throw new Error(`[DataManager::findSchematic] ${error}`);
