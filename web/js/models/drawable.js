@@ -55,10 +55,11 @@ class Drawable {
         const rotatedY = Math.sin(radians) * scaledX + Math.cos(radians) * scaledY;
     
         // Apply translation (offset)
-        const finalX = rotatedX + this.absolute_offset.x;
-        const finalY = rotatedY + this.absolute_offset.y;
+        const offset = this.absolute_offset;
+        const finalX = rotatedX + offset.x;
+        const finalY = rotatedY + offset.y;
     
-        return new Point(finalX, finalY, pivot.z + this._offset.z);
+        return new Point(finalX, finalY, pivot.z + offset.z);
     }
 
     get pane() { return this._pane; }

@@ -16,9 +16,10 @@ class Polyline extends DrawableShape {
             const rotatedY = Math.sin(radians) * scaledX + Math.cos(radians) * scaledY;
 
             // Step 3: Apply translation (offset)
-            const finalX = rotatedX + this.absolute_offset.x;
-            const finalY = rotatedY + this.absolute_offset.y;
-            const finalZ = point.z + this.absolute_offset.z;
+            const offset = this.absolute_offset;
+            const finalX = rotatedX + offset.x;
+            const finalY = rotatedY + offset.y;
+            const finalZ = point.z + offset.z;
 
             return new Point(finalX, finalY, finalZ);
         });
