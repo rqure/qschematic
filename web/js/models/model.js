@@ -3,14 +3,25 @@ class Model extends Drawable {
         super();
         this._shapes = [];
         this._location = new Point();
+        this._offset = new Point();
         this._pane = null;
     }
 
     get location() {
-        return new Point( this._location.x, this._location.y, this._location.z );
+        return new Point( this._location.x + this._offset.x, this._location.y + this._offset.y, this._location.z + this._offset.z );
     }
 
     get pane() { return this._pane; }
+
+    setOffset(value) {
+        this._offset = value;
+
+        this._shapes.forEach(shape => {
+            shape.setOffset(this.location);
+        });
+
+        return this;
+    }
     
     setPane(value) {
         this._pane = value;

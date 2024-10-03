@@ -31,7 +31,7 @@ class DataManager {
                 return fetch(value)
                     .then(res => res.blob())
                     .then(blob => blob.text())
-                    .then(source => callback(source));
+                    .then(source => callback(JSON.parse(source)));
             })
             .catch(error => {
                 qError(`[DataManager::listenForSourceChange] ${error}`);
@@ -124,8 +124,7 @@ class DataManager {
                 return fetch(value)
                     .then(res => res.blob())
                     .then(blob => blob.text())
-                    .then(source => source.json())
-                    .then(source => [readResults[0].getId(), source])
+                    .then(source => [readResults[0].getId(), JSON.parse(source)]);
             })
             .catch(error => {
                 throw new Error(`[DataManager::findSchematic] ${error}`);

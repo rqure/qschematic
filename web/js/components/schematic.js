@@ -12,6 +12,38 @@ class Schematic {
             .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
     }
 
+    __generateModel(source) {
+        const model = new Model();
+        if (source.model.location) {
+            model.setLocation({ x: source.model.location.x, y: source.model.location.y });
+        }
+        if (source.model.offset) {
+            model.setOffset({ x: source.model.offset.x, y: source.model.offset.y });
+        }
+        source.model.shapes.forEach(shape => {
+            let newShape;
+            
+            if (shape.type === "Polygon") {
+                newShape = new Polygon();
+            } else if (shape.type === "Polyline") {
+                newShape = new Polyline();
+            } else {
+                qError(`[Schematic::__generateModel] Unknown shape type: ${shape.type}`);
+                return;
+            }
+            if (shape.location) {
+                newShape.setLocation({ x: shape.location.x, y: shape.location.y });
+            }
+            if (shape.edges && Array.isArray(shape.edges)) {
+                shape.edges.forEach(edge => {
+                    newShape.addEdge({ x: edge.x, y: edge.y });
+                });
+            }
+            model.addShape(newShape);
+        });
+        return model;
+    }
+
     __onDatabaseConnected() {
         if (this._identifier === null) {
             return;
@@ -32,54 +64,9 @@ class Schematic {
             .findSchematic(this._identifier)
             .then((args) => {
                 const [id, source] = args;
-
-                const model = new Model();
-                source.model.shapes.forEach(shape => {
-                    let newShape;
-                    
-                    if (shape.type === "Polygon") {
-                        newShape = new Polygon();
-                    } else if (shape.type === "Polyline") {
-                        newShape = new Polyline();
-                    } else {
-                        qError(`[Schematic::__onDatabaseConnected] Unknown shape type: ${shape.type}`);
-                        return;
-                    }
-                    if (shape.location) {
-                        newShape.setLocation({ x: shape.location.x, y: shape.location.y });
-                    }
-                    if (shape.edges && Array.isArray(shape.edges)) {
-                        shape.edges.forEach(edge => {
-                            newShape.addEdge({ x: edge.x, y: edge.y });
-                        });
-                    }
-                    model.addShape(newShape);
-                });
-
-                this.setModel(model);
+                this.setModel(this.__generateModel(source));
                 this._dataManager.listenForSourceChange(id, source => {
-                    const model = new Model();
-                    source.model.shapes.forEach(shape => {
-                        let newShape;
-                        
-                        if (shape.type === "Polygon") {
-                            newShape = new Polygon();
-                        } else if (shape.type === "Polyline") {
-                            newShape = new Polyline();
-                        } else {
-                            qError(`[Schematic::__onDatabaseConnected] Unknown shape type: ${shape.type}`);
-                            return;
-                        }
-                        if (shape.location) {
-                            newShape.setLocation({ x: shape.location.x, y: shape.location.y });
-                        }
-                        if (shape.edges && Array.isArray(shape.edges)) {
-                            shape.edges.forEach(edge => {
-                                newShape.addEdge({ x: edge.x, y: edge.y });
-                            });
-                        }
-                        model.addShape(newShape);
-                    });
+                    this.setModel(this.__generateModel(source));
                 });
             })
             .catch(error => {
