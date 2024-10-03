@@ -27,19 +27,20 @@ def extract_floor_data(image_path):
         x, y, w, h = cv2.boundingRect(contour)
         
         # Extract edges (coordinates of contour points)
-        edges = [{"x": SCALE(int(pt[0][0])), "y": SCALE(int(pt[0][1]))} for pt in contour]
+        edges = [{"x": int(pt[0][0]), "y": int(pt[0][1])} for pt in contour]
 
         # Optionally, approximate the contour to reduce the number of points
         epsilon = 0.01 * cv2.arcLength(contour, True)
         approx = cv2.approxPolyDP(contour, epsilon, True)
         edges = [{"x": int(pt[0][0]), "y": int(pt[0][1])} for pt in approx]
 
+        edges = [{"x": SCALE(e["x"]), "y": SCALE(e["y"])} for e in edges]
+
         shape_type = "Polygon"  # Other types are Polyline and Circle
 
         # Create the shape data structure for the SDK
         shape_data = {
             "type": shape_type,
-            "location": {"x": edges[0]["x"], "y": edges[0]["y"]},
             "edges": edges
         }
 
@@ -90,7 +91,6 @@ def extract_wall_data(image_path):
         # Create the shape data structure for the SDK
         shape_data = {
             "type": shape_type,
-            "location": {"x": edges_list[0]["x"], "y": edges_list[0]["y"]},
             "edges": edges_list
         }
         

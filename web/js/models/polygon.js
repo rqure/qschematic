@@ -4,16 +4,33 @@ class Polygon extends DrawableShape {
         this._edges = [];
     }
 
-    setOffset(value) {
-        for(let i = 0; i < this._edges.length; i++) {
-            this._edges[i][0] += value.y + this._offset.y;
-            this._edges[i][1] += value.x + this._offset.x;
-        }
+    setLocation(location) {
+        this._edges.forEach(point => {
+            point.x = point.x - this._location.x + location.x;
+            point.y = point.y - this._location.y + location.y;
+            point.z = point.z - this._location.z + location.z;
+        });
 
-        super.setOffset(value);
+        super.setLocation(location);
     }
 
-    addEdge(point) { this._edges.push([point.y + this._offset.y, point.x + this._offset.x]); return this; }
+    setOffset(offset) {
+        this._edges.forEach(point => {
+            point.x = point.x - this._offset.x + offset.x;
+            point.y = point.y - this._offset.y + offset.y;
+            point.z = point.z - this._offset.z + offset.z;
+        });
+
+        super.setOffset(offset);
+    }
+
+    addEdge(point) {
+        this._edges.push(new Point(
+            this.location.x + point.x,
+            this.location.y + point.y));
+
+        return this;
+    }
 
     drawImplementation() {
         const config = {
@@ -26,6 +43,6 @@ class Polygon extends DrawableShape {
             config.pane = this._pane.name;
         }
 
-        return L.polygon([[this.location.y, this.location.x], ...this._edges], config);
+        return L.polygon([...this._edges.map(p => [p.y, p.x])], config);
     }
 };
