@@ -103,8 +103,7 @@ def save_floor_plan_json(floor_data, wall_data, output_path):
     combined_data = {
         "model": {
             "location": {"x": 0, "y": 0},
-            "offset": {"x": 0, "y": 0},
-            "rotation": 0,
+            "rotation": 90,
             "shapes": floor_data["shapes"] + wall_data["shapes"]
         }
     }

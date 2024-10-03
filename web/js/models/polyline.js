@@ -4,30 +4,28 @@ class Polyline extends DrawableShape {
         this._edges = [];
     }
 
-    setLocation(location) {
-        this._edges.forEach(point => {
-            point.x = point.x - this._location.x + location.x;
-            point.y = point.y - this._location.y + location.y;
-            point.z = point.z - this._location.z + location.z;
+    get transformed_edges() {
+        return this._edges.map(point => {
+            // Step 1: Apply scaling relative to the origin
+            const scaledX = point.x * this.scale.x;
+            const scaledY = point.y * this.scale.y;
+
+            // Step 2: Apply rotation around the origin
+            const radians = this.rotation * (Math.PI / 180);
+            const rotatedX = Math.cos(radians) * scaledX - Math.sin(radians) * scaledY;
+            const rotatedY = Math.sin(radians) * scaledX + Math.cos(radians) * scaledY;
+
+            // Step 3: Apply translation (offset)
+            const finalX = rotatedX + this.absolute_offset.x;
+            const finalY = rotatedY + this.absolute_offset.y;
+            const finalZ = point.z + this.absolute_offset.z;
+
+            return new Point(finalX, finalY, finalZ);
         });
-
-        super.setLocation(location);
-    }
-
-    setOffset(offset) {
-        this._edges.forEach(point => {
-            point.x = point.x - this._offset.x + offset.x;
-            point.y = point.y - this._offset.y + offset.y;
-            point.z = point.z - this._offset.z + offset.z;
-        })
-
-        super.setOffset(offset);
     }
 
     addEdge(point) {
-        this._edges.push(new Point(
-            this.location.x + point.x,
-            this.location.y + point.y));
+        this._edges.push(point);
 
         return this;
     }
@@ -43,6 +41,6 @@ class Polyline extends DrawableShape {
             config.pane = this._pane.name;
         }
 
-        return L.polyline([...this._edges.map(p => [p.y, p.x])], config);
+        return L.polyline([...this.transformed_edges.map(p => [p.y, p.x])], config);
     }
 }

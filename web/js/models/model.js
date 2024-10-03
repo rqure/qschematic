@@ -2,49 +2,63 @@ class Model extends Drawable {
     constructor() {
         super();
         this._shapes = [];
-        this._location = new Point();
-        this._offset = new Point();
-        this._pane = null;
     }
-
-    get location() {
-        return new Point( this._location.x + this._offset.x, this._location.y + this._offset.y, this._location.z + this._offset.z );
-    }
-
-    get pane() { return this._pane; }
 
     setOffset(value) {
-        this._offset = value;
+        super.setOffset(value);
 
         this._shapes.forEach(shape => {
-            shape.setOffset(this.location);
+            shape.setOffset(this.offset);
         });
 
         return this;
     }
     
     setPane(value) {
-        this._pane = value;
+        super.setPane(value);
 
         this._shapes.forEach(shape => {
             shape.setPane(this.pane);
-        });       
+        });
 
         return this;
     }
 
-    setLocation(value) {
-        this._location = value; 
+    setScale(value) {
+        super.setScale(value);
 
         this._shapes.forEach(shape => {
-            shape.setOffset(this.location);
+            shape.setScale(this.scale);
+        });
+
+        return this;        
+    }
+
+    setPivot(value) {
+        super.setPivot(value);
+
+        this._shapes.forEach(shape => {
+            shape.setPivot(this.pivot);
+        });
+
+        return this;
+    }
+
+    setRotation(angle) {
+        super.setRotation(angle);
+
+        this._shapes.forEach(shape => {
+            shape.setRotation(angle);
         });
 
         return this;
     }
 
     addShape(shape) {
-        shape.setOffset(this.location);
+        shape.setParent(this);
+        shape.setPivot(this.pivot);
+        shape.setRotation(this.rotation);
+        shape.setScale(this.scale);
         shape.setPane(this.pane);
         this._shapes.push(shape);
         return this;

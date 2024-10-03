@@ -2,32 +2,15 @@ class DrawableShape extends Drawable {
     constructor() {
         super();
         this._self = null;
-        this._location = new Point();
-        this._offset = new Point();
         this._color = 'red';
         this._fillColor = '#f03';
         this._fillOpacity = 0.5;
         this._weight = 1;
-        this._rotationPoint = new Point();
-        this._rotationAngle = 0;
-        this._pane = null;
     }
-
-    get location() {
-        return new Point(
-            this._location.x + this._offset.x,
-            this._location.y + this._offset.y,
-            this._location.z + this._offset.z );
-    }
-
-    get pane() { return this._pane; }
     
-    setOffset(value) { this._offset = value; return this; }
-    setLocation(value) { this._location = value; return this; }
     setBorderColor(value) { this._color = value; return this; }
     setFillColor(value) { this._fillColor = value; return this; }
     setFillOpacity(value) { this._fillOpacity = value; return this; }
-    setPane(value) { this._pane = value; return this; }
     setWeight(value) { this._weight = value; return this; }
 
     drawImplementation() {}

@@ -15,10 +15,10 @@ class Schematic {
     __generateModel(source) {
         const model = new Model();
         if (source.model.location) {
-            model.setLocation({ x: source.model.location.x, y: source.model.location.y });
+            model.setOffset({ x: source.model.location.x, y: source.model.location.y });
         }
-        if (source.model.offset) {
-            model.setOffset({ x: source.model.offset.x, y: source.model.offset.y });
+        if (source.model.rotation) {
+            model.setRotation(source.model.rotation);
         }
         source.model.shapes.forEach(shape => {
             let newShape;
@@ -30,9 +30,6 @@ class Schematic {
             } else {
                 qError(`[Schematic::__generateModel] Unknown shape type: ${shape.type}`);
                 return;
-            }
-            if (shape.location) {
-                newShape.setLocation({ x: shape.location.x, y: shape.location.y });
             }
             if (shape.edges && Array.isArray(shape.edges)) {
                 shape.edges.forEach(edge => {
