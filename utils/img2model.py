@@ -2,7 +2,7 @@ import json
 import cv2
 import argparse
 
-SCALE_FACTOR = 1 / 3  # Scale factor for resizing the image
+SCALE_FACTOR = 1 / 48  # Scale factor for resizing the image
 SCALE = lambda x: x * SCALE_FACTOR
 
 def extract_floor_data(image_path):

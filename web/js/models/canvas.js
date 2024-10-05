@@ -22,6 +22,16 @@ class Canvas {
         drawable.draw(this);
     }
 
+    setMinZoom(value) {
+        this._implementation.setMinZoom(value);
+        return this;
+    }
+
+    setMaxZoom(value) {
+        this._implementation.setMaxZoom(value);
+        return this;
+    }
+
     setBoundary(from, to) {
         this._bottomLeft = from;
         this._topRight = to;

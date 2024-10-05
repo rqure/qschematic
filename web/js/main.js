@@ -11,8 +11,10 @@ async function main() {
 
     const canvas = new Canvas('schematic');
     canvas
+        .setMinZoom(1)
+        .setMaxZoom(10)
         .setBoundary({x: 0, y: 0}, {x: 1000, y: 1000})
-        .moveTo(canvas.center, 0);
+        .moveTo(canvas.center, 5);
 
     const schematic = new Schematic(canvas, database);
     schematic.setIdentifer("home");
