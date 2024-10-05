@@ -6,23 +6,58 @@ class Schematic {
         this._db = database;
         this._dataManager = new DataManager(database);
 
+        this._modelRegistry = {};
+        this.__registerModel('Polygon', () => new Polygon());
+        this.__registerModel('Polyline', () => new Polyline());
+        this.__registerModel('Circle', () => new Circle());
+        this.__registerModel('Image', () => new ImageOverlay());
+        this.__registerModel('Text', () => new Text());
+        this.__registerModel('SvgText', () => new SvgText());
+
         this._db
             .getEventManager()
             .addEventListener(DATABASE_EVENTS.CONNECTED, this.__onDatabaseConnected.bind(this))
             .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
     }
 
+    __registerModel(id, generator) {
+        this._modelRegistry[id] = generator;
+    }
+
+    __registerCustomModel(id, source) {
+        this.__registerModel(id, this.__generateModel.bind(this, source));
+    }
+
     __generateModel(source) {
         const model = new Model();
+
+        if (!source.model) {
+            qError("[Schematic::__generateModel] Invalid source: missing model.");
+            return model;
+        }
+
         if (source.model.location) {
             model.setOffset(new Point(source.model.location.x, source.model.location.y));
         }
+
+        if (source.model.offset) {
+            model.setOffset(new Point(source.model.offset.x, source.model.offset.y));
+        }
+
         if (source.model.scale) {
             model.setScale(source.model.scale);
         }
+
         if (source.model.rotation) {
             model.setRotation(source.model.rotation);
         }
+
+        if (source.model.pane && source.model.pane.name && source.model.pane.level) {
+            model.setPane(new Pane(
+                source.model.pane.name, source.model.pane.level
+            ));
+        }
+
         if (source.model.handlers) {
             Object.entries(source.model.handlers).forEach(([entityIdField, handlerImpl]) => {
                 const callback = eval(`( function(erase, draw, value) { erase(); ${handlerImpl}; draw(); } )`)
@@ -34,16 +69,75 @@ class Schematic {
                 model.onDestroy = () => this._dataManager.unnotify(entityIdField, callback);
             });
         }
+
         source.model.shapes.forEach(shape => {
-            let newShape;
+            const newShape = this._modelRegistry[shape.type]();
             
-            if (shape.type === "Polygon") {
-                newShape = new Polygon();
-            } else if (shape.type === "Polyline") {
-                newShape = new Polyline();
-            } else {
+            if (!newShape) {
                 qError(`[Schematic::__generateModel] Unknown shape type: ${shape.type}`);
                 return;
+            }
+
+            if (shape.location) {
+                newShape.setOffset(new Point(shape.location.x, shape.location.y));
+            }
+
+            if (shape.scale) {
+                newShape.setScale(new Point(shape.scale.x, shape.scale.y));
+            }
+
+            if (shape.rotation) {
+                newShape.setRotation(shape.rotation);
+            }
+
+            if (shape.pane && shape.pane.name && shape.pane.level) {
+                newShape.setPane(new Pane(
+                    shape.pane.name, shape.pane.level
+                ));
+            }
+
+            if (shape.radius) {
+                newShape.setRadius(shape.radius);
+            }
+
+            if (shape.color) {
+                newShape.setColor(shape.color);
+            }
+
+            if (shape.fillColor) {
+                newShape.setFillColor(shape.fillColor);
+            }
+
+            if (shape.fillOpacity) {
+                newShape.setFillOpacity(shape.fillOpacity);
+            }
+
+            if (shape.weight) {
+                newShape.setWeight(shape.weight);
+            }
+
+            if (shape.width) {
+                newShape.setWidth(shape.width);
+            }
+
+            if (shape.height) {
+                newShape.setHeight(shape.height);
+            }
+
+            if (shape.fontSize) {
+                newShape.setFontSize(shape.fontSize);
+            }
+
+            if (shape.text) {
+                newShape.setText(shape.text);
+            }
+
+            if (shape.direction) {
+                newShape.setDirection(shape.direction);
+            }
+
+            if (shape.className) {
+                newShape.setClassName(shape.className);
             }
 
             if (shape.pivot) {
@@ -82,6 +176,7 @@ class Schematic {
 
             model.addShape(newShape);
         });
+
         return model;
     }
 
@@ -91,18 +186,17 @@ class Schematic {
         }
 
         this._dataManager
-            // .findModels()
-            // .then(models => {
-            //     console.log(models);
-            //     models.forEach(model => {
-            //         this._dataManager.listenForSourceChange(model.getId(), source => {
-            //             console.log(source);
-            //             eval(source);
-            //         });
-            //     });
-            // })
-            // .then(() => this._dataManager.findSchematic(this._identifier))
-            .findSchematic(this._identifier)
+            .findModels()
+            .then(models => {
+                models.forEach(([id, identifier, source]) => {
+                    this.__registerCustomModel(identifier, source);
+
+                    this._dataManager.listenForSourceChange(id, source => {
+                        this.__registerCustomModel(identifier, source);
+                    });
+                });
+            })
+            .then(() => this._dataManager.findSchematic(this._identifier))
             .then((args) => {
                 const [id, source] = args;
                 this.setModel(this.__generateModel(source));

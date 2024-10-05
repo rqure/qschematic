@@ -92,7 +92,10 @@ class DataManager {
                 const readRequests = [];
 
                 result.entities.forEach(model => {
-                    read.push({
+                    readRequests.push({
+                        id: model.getId(),
+                        field: "Identifier"
+                    }, {
                         id: model.getId(),
                         field: "SourceFile"
                     });
@@ -101,28 +104,49 @@ class DataManager {
                 return this._db.read(readRequests);
             })
             .then(readResults => {
-                return Promise.all(readResults.reduce((accumulator, result) => {
+                const unresolvedModels = readResults.reduce((accumulator, result) => {
                     const protoClass = result.getValue().getTypeName().split('.').reduce((o, i) => o[i], proto);
                     const id = result.getId();
+                    const field = result.getField();
                     const value = protoClass.deserializeBinary(result.getValue().getValue_asU8()).getRaw();
+
+                    if (!accumulator[id]) {
+                        accumulator[id] = {};
+                    }
+
+                    if (field === "SourceFile") {
+                        if (value === "") {
+                            accumulator[id].unresolvedSource = Promise.resolve([id, {}]);
+                        } else {
+                            accumulator[id].unresolvedSource = fetch(value)
+                                .then(res => res.blob())
+                                .then(blob => blob.text())
+                                .then(source => {
+                                    try {
+                                        return [ id, JSON.parse(source) ]
+                                    }
+                                    catch (error) {
+                                        qWarn(`[DataManager::findModels] Error while parsing source file: ${error}`);
+                                        return [ id, {} ];
+                                    }
+                                });
+                        }
+                    } else {
+                        accumulator[id].identifier = value;
+                    }
     
-                    accumulator.push(
-                        fetch(value)
-                            .then(res => res.blob())
-                            .then(blob => blob.text())
-                            .then(source => {
-                                return { id, source };
-                            })
-                    );
-    
-                    return accumulator;
-                }, []));
-            })
-            .then(resolvedSources => {
-                return resolvedSources.reduce((accumulator, { id, source }) => {
-                    accumulator[id] = source;
                     return accumulator;
                 }, {});
+
+                return Promise
+                    .all(Object.values(unresolvedModels).map(m => m.unresolvedSource))
+                    .then(resolvedSources => {
+                        return resolvedSources.map(resolvedSource => {
+                            const [id, source] = resolvedSource;
+                            const identifier = unresolvedModels[id].identifier;
+                            return [id, identifier, source];
+                        });
+                    });
             })
             .catch(error => {
                 throw new Error(`[DataManager::findModels] ${error}`);

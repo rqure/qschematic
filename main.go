@@ -35,6 +35,8 @@ func main() {
 
 	schemaValidator := qdb.NewSchemaValidator(db)
 	schemaValidator.AddEntity("Root", "SchemaUpdateTrigger")
+	schemaValidator.AddEntity("Schematic", "Identifier", "SourceFile")
+	schemaValidator.AddEntity("SchematicModel", "Identifier", "SourceFile")
 
 	dbWorker.Signals.SchemaUpdated.Connect(qdb.Slot(schemaValidator.ValidationRequired))
 	dbWorker.Signals.Connected.Connect(qdb.Slot(schemaValidator.ValidationRequired))
