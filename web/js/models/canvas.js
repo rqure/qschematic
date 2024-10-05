@@ -10,6 +10,14 @@ class Canvas {
         });
         this._bottomLeft = new Point();
         this._topRight = new Point();
+        this.onmousemove = null;
+
+        this._implementation.on('mousemove', (event) => {
+            if (this.onmousemove) {
+                const point = new Point(event.latlng.lng.toFixed(5), event.latlng.lat.toFixed(5));
+                this.onmousemove(point);
+            }
+        });
     }
 
     get implementation() { return this._implementation; }

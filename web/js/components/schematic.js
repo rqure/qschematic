@@ -28,153 +28,135 @@ class Schematic {
         this.__registerModel(id, this.__generateModel.bind(this, source));
     }
 
-    __generateModel(source) {
-        const model = new Model();
-
-        if (!source.model) {
-            qError("[Schematic::__generateModel] Invalid source: missing model.");
-            return model;
+    __applyShapeConfig(shape, config) {
+        if (config.location) {
+            shape.setOffset(new Point(config.location.x, config.location.y));
         }
 
-        if (source.model.location) {
-            model.setOffset(new Point(source.model.location.x, source.model.location.y));
+        if (config.scale) {
+            shape.setScale(new Point(config.scale.x, config.scale.y));
         }
 
-        if (source.model.offset) {
-            model.setOffset(new Point(source.model.offset.x, source.model.offset.y));
+        if (config.rotation) {
+            shape.setRotation(config.rotation);
         }
 
-        if (source.model.scale) {
-            model.setScale(source.model.scale);
-        }
-
-        if (source.model.rotation) {
-            model.setRotation(source.model.rotation);
-        }
-
-        if (source.model.pane && source.model.pane.name && source.model.pane.level) {
-            model.setPane(new Pane(
-                source.model.pane.name, source.model.pane.level
+        if (config.pane && config.pane.name && config.pane.level) {
+            shape.setPane(new Pane(
+                config.pane.name, config.pane.level
             ));
         }
 
-        if (source.model.handlers) {
-            Object.entries(source.model.handlers).forEach(([entityIdField, handlerImpl]) => {
-                const callback = eval(`( function(erase, draw, value) { erase(); ${handlerImpl}; draw(); } )`)
-                .bind(model,
-                    model.erase.bind(model),
-                    model.draw.bind(model, this._canvas));
+        if (config.radius) {
+            shape.setRadius(config.radius);
+        }
 
-                this._dataManager.notify(entityIdField, callback)
-                model.onDestroy = () => this._dataManager.unnotify(entityIdField, callback);
+        if (config.color) {
+            shape.setColor(config.color);
+        }
+
+        if (config.fillColor) {
+            shape.setFillColor(config.fillColor);
+        }
+
+        if (config.fillOpacity) {
+            shape.setFillOpacity(config.fillOpacity);
+        }
+
+        if (config.weight) {
+            shape.setWeight(config.weight);
+        }
+
+        if (config.width) {
+            shape.setWidth(config.width);
+        }
+
+        if (config.height) {
+            shape.setHeight(config.height);
+        }
+
+        if (config.fontSize) {
+            shape.setFontSize(config.fontSize);
+        }
+
+        if (config.text) {
+            shape.setText(config.text);
+        }
+
+        if (config.direction) {
+            shape.setDirection(config.direction);
+        }
+
+        if (config.className) {
+            shape.setClassName(config.className);
+        }
+
+        if (config.pivot) {
+            shape.setPivot(new Point(config.pivot.x, config.pivot.y));
+        }
+
+        if (config.rotation) {
+            shape.setRotation(config.rotation);
+        }
+
+        if (config.scale) {
+            shape.setScale(new Point(config.scale.x, config.scale.y));
+        }
+
+        if (config.offset) {
+            shape.setOffset(new Point(config.offset.x, config.offset.y));
+        }
+
+        if (config.edges && Array.isArray(config.edges)) {
+            config.edges.forEach(edge => {
+                shape.addEdge(new Point(edge.x, edge.y));
             });
         }
 
-        source.model.shapes.forEach(shape => {
-            const newShape = this._modelRegistry[shape.type]();
+        if (config.handlers) {
+            Object.entries(config.handlers).forEach(([entityIdField, handlerImpl]) => {
+                const callback = eval(`( function(erase, draw, value) { erase(); ${handlerImpl}; draw(); } )`)
+                    .bind(shape,
+                        shape.erase.bind(shape),
+                        shape.draw.bind(shape, this._canvas));
+
+                this._dataManager.notify(entityIdField, callback)
+                shape.onDestroy = () => this._dataManager.unnotify(entityIdField, callback);
+            });
+        }
+    }
+
+    __generateModel(source) {
+        if (!source.model) {
+            qError("[Schematic::__generateModel] Invalid source: missing model.");
+            return new Model();
+        }
+
+        let model = null;
+        if (source.model.type && this._modelRegistry[source.model.type]) {
+            model = this._modelRegistry[source.model.type]();
+
+            if (!model) {
+                qError(`[Schematic::__generateModel] Unknown model type: ${source.model.type}`);
+                return new Model();
+            }
+        } else {
+            model = new Model();
+        }
+
+        this.__applyShapeConfig(model, source.model);
+
+        source.model.shapes.forEach(shapeConfig => {
+            const newShape = this._modelRegistry[shapeConfig.type]();
             
             if (!newShape) {
-                qError(`[Schematic::__generateModel] Unknown shape type: ${shape.type}`);
+                qError(`[Schematic::__generateModel] Unknown shape type: ${shapeConfig.type}`);
                 return;
             }
 
-            if (shape.location) {
-                newShape.setOffset(new Point(shape.location.x, shape.location.y));
-            }
-
-            if (shape.scale) {
-                newShape.setScale(new Point(shape.scale.x, shape.scale.y));
-            }
-
-            if (shape.rotation) {
-                newShape.setRotation(shape.rotation);
-            }
-
-            if (shape.pane && shape.pane.name && shape.pane.level) {
-                newShape.setPane(new Pane(
-                    shape.pane.name, shape.pane.level
-                ));
-            }
-
-            if (shape.radius) {
-                newShape.setRadius(shape.radius);
-            }
-
-            if (shape.color) {
-                newShape.setColor(shape.color);
-            }
-
-            if (shape.fillColor) {
-                newShape.setFillColor(shape.fillColor);
-            }
-
-            if (shape.fillOpacity) {
-                newShape.setFillOpacity(shape.fillOpacity);
-            }
-
-            if (shape.weight) {
-                newShape.setWeight(shape.weight);
-            }
-
-            if (shape.width) {
-                newShape.setWidth(shape.width);
-            }
-
-            if (shape.height) {
-                newShape.setHeight(shape.height);
-            }
-
-            if (shape.fontSize) {
-                newShape.setFontSize(shape.fontSize);
-            }
-
-            if (shape.text) {
-                newShape.setText(shape.text);
-            }
-
-            if (shape.direction) {
-                newShape.setDirection(shape.direction);
-            }
-
-            if (shape.className) {
-                newShape.setClassName(shape.className);
-            }
-
-            if (shape.pivot) {
-                newShape.setPivot(new Point(shape.pivot.x, shape.pivot.y));
-            }
-
-            if (shape.rotation) {
-                newShape.setRotation(shape.rotation);
-            }
-
-            if (shape.scale) {
-                newShape.setScale(new Point(shape.scale.x, shape.scale.y));
-            }
-
-            if (shape.offset) {
-                newShape.setOffset(new Point(shape.offset.x, shape.offset.y));
-            }
-
-            if (shape.edges && Array.isArray(shape.edges)) {
-                shape.edges.forEach(edge => {
-                    newShape.addEdge(new Point(edge.x, edge.y));
-                });
-            }
-
-            if (shape.handlers) {
-                Object.entries(shape.handlers).forEach(([entityIdField, handlerImpl]) => {
-                    const callback = eval(`( function(erase, draw, value) { erase(); ${handlerImpl}; draw(); } )`)
-                        .bind(newShape,
-                            newShape.erase.bind(newShape),
-                            newShape.draw.bind(newShape, this._canvas));
-
-                    this._dataManager.notify(entityIdField, callback)
-                    newShape.onDestroy = () => this._dataManager.unnotify(entityIdField, callback);
-                });
-            }
-
             model.addShape(newShape);
+
+            this.__applyShapeConfig(newShape, shapeConfig);
         });
 
         return model;
