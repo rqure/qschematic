@@ -15,10 +15,24 @@ class Schematic {
     __generateModel(source) {
         const model = new Model();
         if (source.model.location) {
-            model.setOffset({ x: source.model.location.x, y: source.model.location.y });
+            model.setOffset(new Point(source.model.location.x, source.model.location.y));
+        }
+        if (source.model.scale) {
+            model.setScale(source.model.scale);
         }
         if (source.model.rotation) {
             model.setRotation(source.model.rotation);
+        }
+        if (source.model.handlers) {
+            Object.entries(source.model.handlers).forEach(([entityIdField, handlerImpl]) => {
+                const callback = eval(`( function(erase, draw, value) { erase(); ${handlerImpl}; draw(); } )`)
+                .bind(model,
+                    model.erase.bind(model),
+                    model.draw.bind(model, this._canvas));
+
+                this._dataManager.notify(entityIdField, callback)
+                model.onDestroy = () => this._dataManager.unnotify(entityIdField, callback);
+            });
         }
         source.model.shapes.forEach(shape => {
             let newShape;
@@ -31,11 +45,41 @@ class Schematic {
                 qError(`[Schematic::__generateModel] Unknown shape type: ${shape.type}`);
                 return;
             }
+
+            if (shape.pivot) {
+                newShape.setPivot(new Point(shape.pivot.x, shape.pivot.y));
+            }
+
+            if (shape.rotation) {
+                newShape.setRotation(shape.rotation);
+            }
+
+            if (shape.scale) {
+                newShape.setScale(new Point(shape.scale.x, shape.scale.y));
+            }
+
+            if (shape.offset) {
+                newShape.setOffset(new Point(shape.offset.x, shape.offset.y));
+            }
+
             if (shape.edges && Array.isArray(shape.edges)) {
                 shape.edges.forEach(edge => {
-                    newShape.addEdge({ x: edge.x, y: edge.y });
+                    newShape.addEdge(new Point(edge.x, edge.y));
                 });
             }
+
+            if (shape.handlers) {
+                Object.entries(shape.handlers).forEach(([entityIdField, handlerImpl]) => {
+                    const callback = eval(`( function(erase, draw, value) { erase(); ${handlerImpl}; draw(); } )`)
+                        .bind(newShape,
+                            newShape.erase.bind(newShape),
+                            newShape.draw.bind(newShape, this._canvas));
+
+                    this._dataManager.notify(entityIdField, callback)
+                    newShape.onDestroy = () => this._dataManager.unnotify(entityIdField, callback);
+                });
+            }
+
             model.addShape(newShape);
         });
         return model;
@@ -87,6 +131,7 @@ class Schematic {
     setModel(value) {
         if (this._model !== null) {
             this._model.erase();
+            this._model.destroy();
             this._model = null;
         }
 

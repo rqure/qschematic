@@ -1,10 +1,10 @@
-
 /**
  * Used to manage the data from the database and provide it to the schematic (and models under it).
  */
 class DataManager {
     constructor(db) {
         this._db = db;
+        this._handlers = {};
 
         this._db
             .getEventManager()
@@ -17,6 +17,53 @@ class DataManager {
     }
 
     __onDatabaseDisconnected() {
+    }
+
+    notify(entityIdField, handler) {
+        qTrace(`[DataManager::notify] Registering handler for ${entityIdField}.`);
+
+        if( !this._handlers[entityIdField] ) {
+            this._handlers[entityIdField] = [];
+        }
+
+        this._handlers[entityIdField].push(handler);
+
+        const [entityId, field] = entityIdField.split('->');
+        this._db
+            .registerNotifications([{
+                id: entityId,
+                field: field,
+            }], notification => {
+                const field = notification.getCurrent();
+                const protoClass = field.getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
+                const value = protoClass.deserializeBinary(field.getValue().getValue_asU8()).getRaw();
+
+                qTrace(`[DataManager::notify] Notifying handler for ${entityIdField}.`);
+
+                handler(value);
+            });
+        
+        this._db
+            .read([{
+                id: entityId,
+                field: field,
+            }])
+            .then(result => {
+                result = result[0];
+
+                const protoClass = result.getValue().getTypeName().split('.').reduce((o, i) => o[i], proto);
+                const value = protoClass.deserializeBinary(result.getValue().getValue_asU8()).getRaw();
+
+                qTrace(`[DataManager::notify] Read handler for ${entityIdField}.`);
+
+                handler(value);
+            });
+    }
+
+    unnotify(entityIdField, handler) {
+        if( this._handlers[entityIdField] ) {
+            this._handlers[entityIdField] = this._handlers[entityIdField].filter(h => h !== handler);
+        }
     }
 
     listenForSourceChange(id, callback) {

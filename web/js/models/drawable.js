@@ -21,7 +21,28 @@ class Drawable {
         return this._rotation;
     }
 
+    get absolute_rotation() {
+        if (this._parent) {
+            return this._parent.absolute_rotation + this._rotation;
+        }
+
+        return this._rotation;
+    }
+
     get scale() {
+        return this._scale;
+    }
+
+    get absolute_scale() {
+        if (this._parent) {
+            const parentScale = this._parent.absolute_scale;
+            return new Point(
+                parentScale.x * this._scale.x,
+                parentScale.y * this._scale.y,
+                parentScale.z * this._scale.z
+            );
+        }
+
         return this._scale;
     }
 
@@ -46,11 +67,12 @@ class Drawable {
         const pivot = this._pivot;
 
         // Apply scaling to the pivot
-        const scaledX = pivot.x * this._scale.x;
-        const scaledY = pivot.y * this._scale.y;
+        const scale = this.absolute_scale;
+        const scaledX = pivot.x * scale.x;
+        const scaledY = pivot.y * scale.y;
     
         // Apply rotation to the scaled point
-        const radians = this._rotation * (Math.PI / 180);
+        const radians = this.absolute_rotation * (Math.PI / 180);
         const rotatedX = Math.cos(radians) * scaledX - Math.sin(radians) * scaledY;
         const rotatedY = Math.sin(radians) * scaledX + Math.cos(radians) * scaledY;
     
@@ -77,5 +99,11 @@ class Drawable {
 
     draw(canvas) {
         this._isVisible = true;
+    }
+
+    destroy() {
+        if (this.onDestroy) {
+            this.onDestroy();
+        }
     }
 };
