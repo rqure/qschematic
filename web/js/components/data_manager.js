@@ -116,6 +116,7 @@ class DataManager {
 
                     if (field === "SourceFile") {
                         if (value === "") {
+                            qWarn(`[DataManager::findModels] Source file not found for model ${id}.`);
                             accumulator[id].unresolvedSource = Promise.resolve([id, {}]);
                         } else {
                             accumulator[id].unresolvedSource = fetch(value)
