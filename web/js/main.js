@@ -1,8 +1,5 @@
 async function main() {
     CURRENT_LOG_LEVEL=LOG_LEVELS.DEBUG;
-
-    const app = Vue.createApp({});
-    app.mount('#desktop');
     
     const database = new DatabaseInteractor({
         port: ":20000"

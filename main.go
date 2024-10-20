@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"os"
 
 	qdb "github.com/rqure/qdb/src"
@@ -27,6 +28,10 @@ func getWebServiceAddress() string {
 func main() {
 	db := qdb.NewRedisDatabase(qdb.RedisDatabaseConfig{
 		Address: getDatabaseAddress(),
+	})
+
+	http.HandleFunc("/editor", func(wr http.ResponseWriter, r *http.Request) {
+		http.ServeFile(wr, r, "./web/editor.html")
 	})
 
 	dbWorker := qdb.NewDatabaseWorker(db)
