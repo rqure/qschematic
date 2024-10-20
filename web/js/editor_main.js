@@ -13,10 +13,24 @@ async function main() {
     database.runInBackground(true);
 
     registerSchematicExplorerComponent(app, {
-        qDatabaseInteractor: database
+        database: database
     });
 
-    registerEditorContainerComponent(app, {});
+    registerEditorContainerComponent(app, {
+        database: database
+    });
+
+    registerNewModalComponent(app, {
+        modalType: "schematic",
+        entityType: "Schematic",
+        database: database,
+    });
+
+    registerNewModalComponent(app, {
+        modalType: "model",
+        entityType: "SchematicModel",
+        database: database,
+    });
 
     app.mount('#desktop');
 }
