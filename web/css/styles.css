@@ -22,3 +22,8 @@ body {
 .fill-v {
     height: 100%;
 }
+
+.no-margin-padding {
+    margin: 0;
+    padding: 0;
+}

@@ -24,21 +24,12 @@
 <body>
     <div id="desktop" class="container-fluid fill-v">
         <div class="row fill-v">
-            <!-- File Explorer (Left Side) -->
-            <div id="fileExplorer" class="col-3 fill-v">
-              <h5>File Explorer</h5>
-              <ul class="list-group">
-                <li class="list-group-item">file1.js</li>
-                <li class="list-group-item">file2.js</li>
-                <li class="list-group-item">file3.js</li>
-              </ul>
-            </div>
-      
+            <!-- Schematic explorer (Left Side) -->
+            <schematic-explorer class="col-3 fill-v no-margin-padding"></schematic-explorer>
+
             <!-- Editor (Right Side) -->
-            <div id="editor" class="col-9 fill-v">
-              <div id="editorContainer" style="height: 100%; border: 1px solid grey;"></div>
-            </div>
-          </div>
+            <editor-container class="col-9 fill-v no-margin-padding"></editor-container>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -50,6 +41,8 @@
     <script src="js/qdb/database_interactor.js"></script>
 
     <script src="js/components/data_manager.js"></script>
+    <script src="js/components/schematic_explorer.js"></script>
+    <script src="js/components/editor_container.js"></script>
 
     <script src="js/editor_main.js"></script>
 
