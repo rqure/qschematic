@@ -1,11 +1,7 @@
 async function main() {
     CURRENT_LOG_LEVEL = LOG_LEVELS.DEBUG;
 
-    const app = Vue.createApp({
-        data() {
-            return {};
-        },
-    });
+    const app = Vue.createApp({});
 
     const database = new DatabaseInteractor({
         port: ":20000"
@@ -23,13 +19,13 @@ async function main() {
     registerNewModalComponent(app, {
         modalType: "schematic",
         entityType: "Schematic",
-        database: database,
+        database: database
     });
 
     registerNewModalComponent(app, {
         modalType: "model",
         entityType: "SchematicModel",
-        database: database,
+        database: database
     });
 
     app.mount('#desktop');
