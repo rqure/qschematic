@@ -18,6 +18,11 @@ async function main() {
         coordinates.innerHTML = `X: ${point.x}, Y: ${point.y}`;
     };
 
+    const recenterButton = document.getElementById('recenter-btn');
+    recenterButton.onclick = () => {
+        canvas.moveTo(canvas.center, 5);
+    };
+
     const schematic = new Schematic(canvas, database);
     schematic.setIdentifer("Main");
 }
