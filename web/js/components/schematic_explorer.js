@@ -52,6 +52,20 @@ function registerSchematicExplorerComponent(app, context) {
             onDelete(entity) {
                 if (this.shared.selected === entity) {
                     this.shared.selected = null;
+
+                    if (editor) {
+                        editor.setValue("{}");
+                        editor.updateOptions({ readOnly: true });
+                    }
+
+                    db
+                        .deleteEntity(entity.id)
+                        .then(() => {
+                            qDebug(`[SchematicExplorer::onDelete] Successfully deleted entity ${entity.id}.`);
+                        })
+                        .catch(err => {
+                            qError(`[SchematicExplorer::onDelete] ${err}`);
+                        });
                 }
             },
 
