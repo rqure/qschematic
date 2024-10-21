@@ -8,24 +8,35 @@ async function main() {
     });
     database.runInBackground(true);
 
+    const shared = Vue.reactive({
+        selected: null,
+        editor: null,
+        models: [],
+        schematics: []
+    });
+
     registerSchematicExplorerComponent(app, {
-        database: database
+        database: database,
+        shared: shared
     });
 
     registerEditorContainerComponent(app, {
-        database: database
+        database: database,
+        shared: shared
     });
 
     registerNewModalComponent(app, {
         modalType: "schematic",
         entityType: "Schematic",
-        database: database
+        database: database,
+        shared: shared
     });
 
     registerNewModalComponent(app, {
         modalType: "model",
         entityType: "SchematicModel",
-        database: database
+        database: database,
+        shared: shared
     });
 
     app.mount('#desktop');

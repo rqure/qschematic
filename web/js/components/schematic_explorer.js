@@ -9,8 +9,7 @@ function registerSchematicExplorerComponent(app, context) {
             return {
                 db: context.database,
                 isDatabaseConnected: false,
-                models: [],
-                schematics: []
+                shared: context.shared,
             };
         },
 
@@ -27,9 +26,13 @@ function registerSchematicExplorerComponent(app, context) {
                 this.db.registerNotifications([
                     { type: 'Root', field: 'SchemaUpdateTrigger' },
                 ], (n) => {
-                    this.findAll('SchematicModel').then(models => this.models = models);
-                    this.findAll('Schematic').then(schematics => this.schematics = schematics);
+                    qDebug(`[SchematicExplorer::onDatabaseConnected] Schema has changed. Finding any new schematic related entities.`);
+                    this.findAll('SchematicModel').then(models => this.shared.models = models.toSorted((a, b) => ('' + a.name).localeCompare(b.name)));
+                    this.findAll('Schematic').then(schematics => this.shared.schematics = schematics.toSorted((a, b) => ('' + a.name).localeCompare(b.name)));
                 });
+
+                this.findAll('SchematicModel').then(models => this.shared.models = models.toSorted((a, b) => ('' + a.name).localeCompare(b.name)));
+                this.findAll('Schematic').then(schematics => this.shared.schematics = schematics.toSorted((a, b) => ('' + a.name).localeCompare(b.name)));
             },
 
             onDatabaseDisconnected() {
@@ -39,26 +42,43 @@ function registerSchematicExplorerComponent(app, context) {
             findAll(entityType) {
                 return this.db
                     .queryAllEntities(entityType)
-                    .then(models => models.map(model => {
-                            return { id: model.getId(), field: 'Identifier' }
-                    }))
-                    .then(fields => this.db.read(fields))
-                    .then(results => results.map(result => {
-                        const protoClass = result.getValue().getTypeName().split('.').reduce((o, i) => o[i], proto);
-                        const value = protoClass.deserializeBinary(result.getValue().getValue_asU8()).getRaw();
-                        return { id: result.getId(), name: value };
+                    .then(result => result.entities.map(entity => {
+                        return { id: entity.getId(), name: entity.getName() };
                     }))
                     .catch(err => {
                         qError(`[SchematicExplorer::findAllModels] ${err}`);
                     });
             },
 
-            onDeleteModel(model) {
-
+            onDelete(entity) {
+                if (this.shared.selected === entity) {
+                    this.shared.selected = null;
+                }
             },
 
-            onDeleteSchematic(schematic) {
+            onSelect(entity) {
+                this.shared.selected = entity;
 
+                if (this.shared.editor) {
+                    this.shared.editor.updateOptions({ readOnly: false });
+
+                    this.db
+                        .read([{
+                            id: entity.id,
+                            field: "SourceFile"
+                        }])
+                        .then(readResults => {
+                            const protoClass = readResults[0].getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
+                            const value = protoClass.deserializeBinary(readResults[0].getValue().getValue_asU8()).getRaw();
+                            return fetch(value)
+                                .then(res => res.blob())
+                                .then(blob => blob.text())
+                                .then(source => this.shared.editor.setValue(source));
+                        })
+                        .catch(err => {
+                            qError(`[SchematicExplorer::onSelect] ${err}`);
+                        });
+                }
             }
         },
 
@@ -67,22 +87,22 @@ function registerSchematicExplorerComponent(app, context) {
                 <li class="list-group-item active">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">Models</h5>
-                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-model-modal">New</button>
+                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-model-modal" :disabled="!isDatabaseConnected">New</button>
                     </div>
                 </li>
-                <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-start" v-for="model in models">
+                <li class="list-group-item list-group-item-action list-group-item-secondary d-flex justify-content-between align-items-start" v-for="model in shared.models" v-bind:class="{ 'active': (model === shared.selected) }" @click="onSelect(model)">
                     {{ model.name }}
-                    <span class="badge text-bg-secondary" @click="onDeleteModel(model)">🗑</span>
+                    <button type="button" class="btn btn-light" @click="onDelete(model)" :disabled="!isDatabaseConnected">🗑</button>
                 </li>
                 <li class="list-group-item active">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">Schematics</h5>
-                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-schematic-modal">New</button>
+                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-schematic-modal" :disabled="!isDatabaseConnected">New</button>
                     </div>
                 </li>
-                <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-start" v-for="schematic in schematics">
+                <li class="list-group-item list-group-item-action list-group-item-secondary d-flex justify-content-between align-items-start" v-for="schematic in shared.schematics" v-bind:class="{ 'active': (schematic === shared.selected) }" @click="onSelect(schematic)">
                     {{ schematic.name }}
-                    <span class="badge text-bg-secondary" @click="onDeleteSchematic(schematic)">🗑</span>
+                    <button type="button" class="btn btn-light" @click="onDelete(schematic)" :disabled="!isDatabaseConnected">🗑</button>
                 </li>
             </ul>
         `

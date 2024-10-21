@@ -39,9 +39,9 @@ func main() {
 	leaderElectionWorker := qdb.NewLeaderElectionWorker(db)
 
 	schemaValidator := qdb.NewSchemaValidator(db)
-	schemaValidator.AddEntity("Root", "SchemaUpdateTrigger")
-	schemaValidator.AddEntity("Schematic", "Identifier", "SourceFile")
-	schemaValidator.AddEntity("SchematicModel", "Identifier", "SourceFile")
+	schemaValidator.AddEntity("SchematicController")
+	schemaValidator.AddEntity("Schematic", "SourceFile")
+	schemaValidator.AddEntity("SchematicModel", "SourceFile")
 
 	dbWorker.Signals.SchemaUpdated.Connect(qdb.Slot(schemaValidator.ValidationRequired))
 	dbWorker.Signals.Connected.Connect(qdb.Slot(schemaValidator.ValidationRequired))

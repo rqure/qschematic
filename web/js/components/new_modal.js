@@ -15,8 +15,8 @@ function registerNewModalComponent(app, context) {
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="onCancelButtonPressed">Cancel</button>
                 <button type="button" class="btn btn-success" data-bs-dismiss="modal" @click="onCreateButtonPressed" :disabled="isCreateDisabled">Create</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="onCancelButtonPressed">Cancel</button>
             </div>
         </div>
     </div>
@@ -30,13 +30,15 @@ function registerNewModalComponent(app, context) {
 
             return {
                 name: "",
-                database: context.database,
+                shared: context.shared,
+                schematicControllerId: null, // Models, schematics, etc. are all under a controller entity.
+                db: context.database,
                 isDatabaseConnected: false
             }
         },
         
         mounted() {
-            if (this.database.isConnected()) {
+            if (this.db.isConnected()) {
                 this.onDatabaseConnected();
             }
         },
@@ -44,23 +46,44 @@ function registerNewModalComponent(app, context) {
         methods: {
             onDatabaseConnected() {
                 this.isDatabaseConnected = true;
+
+                this.db
+                    .queryAllEntities("SchematicController")
+                    .then(result => {
+                        if (result.entities.length > 0) {
+                            this.schematicControllerId = result.entities[0].getId();
+                        } else {
+                            qWarn("[NewModal::onDatabaseConnected] No schematic controller found.");
+                        }
+                    })
+                    .catch(err => {
+                        qError(`[NewModal::onDatabaseConnected] ${err}`);
+                    });
             },
 
             onDatabaseDisconnected() {
                 this.isDatabaseConnected = false;
+                this.schematicControllerId = null;
             },
 
             onCreateButtonPressed() {
-                
+                this.db
+                    .createEntity(this.schematicControllerId, this.name.trim(), context.entityType)
+                    .catch(err => {
+                        qError(`[NewModal::onCreateButtonPressed] ${err}`);
+                    });
             },
 
             onCancelButtonPressed() {
-
+                this.name = "";
             },
         },
         computed: {
             isCreateDisabled() {
-                return false;
+                return this.name.trim().length == 0 ||
+                    !this.schematicControllerId ||
+                    this.shared.models.some(model => model.name == this.name) ||
+                    this.shared.schematics.some(schematic => schematic.name == this.name);
             }
         }
     })

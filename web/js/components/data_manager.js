@@ -94,9 +94,6 @@ class DataManager {
                 result.entities.forEach(model => {
                     readRequests.push({
                         id: model.getId(),
-                        field: "Identifier"
-                    }, {
-                        id: model.getId(),
                         field: "SourceFile"
                     });
                 });
@@ -107,11 +104,13 @@ class DataManager {
                 const unresolvedModels = readResults.reduce((accumulator, result) => {
                     const protoClass = result.getValue().getTypeName().split('.').reduce((o, i) => o[i], proto);
                     const id = result.getId();
+                    const name = result.getName();
                     const field = result.getField();
                     const value = protoClass.deserializeBinary(result.getValue().getValue_asU8()).getRaw();
 
                     if (!accumulator[id]) {
                         accumulator[id] = {};
+                        accumulator[id].identifier = name;
                     }
 
                     if (field === "SourceFile") {
@@ -132,8 +131,6 @@ class DataManager {
                                     }
                                 });
                         }
-                    } else {
-                        accumulator[id].identifier = value;
                     }
     
                     return accumulator;
@@ -157,36 +154,15 @@ class DataManager {
     findSchematic(schematicId) {
         return this._db
             .queryAllEntities("Schematic")
-            .then(result => {
-                let readRequests = result.entities.map(schematic => {
-                    return {
-                        id: schematic.getId(),
-                        field: "Identifier"
-                    }
-                });
-
-                return this._db.read(readRequests);
-            })
-            .then(readResults => {
-                readResults = readResults
-                    .map(result => {
-                        const protoClass = result.getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
-                        const value = protoClass.deserializeBinary(result.getValue().getValue_asU8()).getRaw();
-
-                        return {
-                            id: result.getId(),
-                            field: result.getField(),
-                            value: value
-                        };
-                    })
-                    .filter(result => result.value === schematicId);
+            .then(schematics => {
+                schematics = schematics.entities.filter(schematic => schematic.getName() === schematicId);
                 
-                if (readResults.length === 0) {
+                if (schematics.length === 0) {
                     return Promise.reject("Schematic not found.");
                 }
 
                 return this._db.read([{
-                    id: readResults[0].id,
+                    id: schematics[0].getId(),
                     field: "SourceFile"
                 }]);
             })
