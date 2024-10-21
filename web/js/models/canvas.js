@@ -1,5 +1,6 @@
 class Canvas {
     constructor(id) {
+        this._id = id;
         this._implementation = L.map(id, {
             crs: L.CRS.Simple,
             zoomControl: false,
@@ -12,6 +13,8 @@ class Canvas {
         this._topRight = new Point();
         this.onmousemove = null;
 
+        this.element.style.backgroundColor = "#212529";
+
         this._implementation.on('mousemove', (event) => {
             if (this.onmousemove) {
                 const point = new Point(event.latlng.lng.toFixed(5), event.latlng.lat.toFixed(5));
@@ -19,6 +22,10 @@ class Canvas {
             }
         });
     }
+
+    get id() { return this._id; }
+
+    get element() { return document.getElementById(this._id); }
 
     get implementation() { return this._implementation; }
 

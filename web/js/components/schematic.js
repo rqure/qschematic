@@ -29,88 +29,88 @@ class Schematic {
     }
 
     __applyShapeConfig(shape, config) {
-        if (config.location) {
+        if (config.location && shape.setOffset) {
             shape.setOffset(new Point(config.location.x, config.location.y));
         }
 
-        if (config.scale) {
+        if (config.scale && shape.setScale) {
             shape.setScale(new Point(config.scale.x, config.scale.y));
         }
 
-        if (config.rotation) {
-            shape.setRotation(config.rotation);
-        }
-
-        if (config.pane && config.pane.name && config.pane.level) {
+        if (config.pane && config.pane.name && config.pane.level && shape.setPane) {
             shape.setPane(new Pane(
                 config.pane.name, config.pane.level
             ));
         }
 
-        if (config.radius) {
+        if (config.radius && shape.setRadius) {
             shape.setRadius(config.radius);
         }
 
-        if (config.color) {
+        if (config.color && shape.setColor) {
             shape.setColor(config.color);
         }
 
-        if (config.fillColor) {
+        if (config.fillColor && shape.setFillColor) {
             shape.setFillColor(config.fillColor);
         }
 
-        if (config.fillOpacity) {
+        if (config.fillOpacity && shape.setFillOpacity) {
             shape.setFillOpacity(config.fillOpacity);
         }
 
-        if (config.weight) {
+        if (config.weight && shape.setWeight) {
             shape.setWeight(config.weight);
         }
 
-        if (config.width) {
+        if (config.width && shape.setWidth) {
             shape.setWidth(config.width);
         }
 
-        if (config.height) {
+        if (config.height && shape.setHeight) {
             shape.setHeight(config.height);
         }
 
-        if (config.fontSize) {
+        if (config.fontSize && shape.setFontSize) {
             shape.setFontSize(config.fontSize);
         }
 
-        if (config.text) {
+        if (config.text && shape.setText) {
             shape.setText(config.text);
         }
 
-        if (config.direction) {
+        if (config.direction && shape.setDirection) {
             shape.setDirection(config.direction);
         }
 
-        if (config.className) {
+        if (config.className && shape.setClassName) {
             shape.setClassName(config.className);
         }
 
-        if (config.pivot) {
+        if (config.pivot && shape.setPivot) {
             shape.setPivot(new Point(config.pivot.x, config.pivot.y));
         }
 
-        if (config.rotation) {
+        if (config.rotation && shape.setRotation) {
             shape.setRotation(config.rotation);
         }
 
-        if (config.scale) {
+        if (config.scale && shape.setScale) {
             shape.setScale(new Point(config.scale.x, config.scale.y));
         }
 
-        if (config.offset) {
+        if (config.offset && shape.setOffset) {
             shape.setOffset(new Point(config.offset.x, config.offset.y));
         }
 
-        if (config.edges && Array.isArray(config.edges)) {
+        if (config.edges && Array.isArray(config.edges) && shape.addEdge) {
             config.edges.forEach(edge => {
                 shape.addEdge(new Point(edge.x, edge.y));
             });
+        }
+
+        if (config.canvasBackground) {
+            this._canvas.element.style.backgroundColor = config.canvasBackground;
         }
 
         if (config.handlers) {
