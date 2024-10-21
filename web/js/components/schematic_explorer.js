@@ -1,20 +1,19 @@
 function registerSchematicExplorerComponent(app, context) {
     return app.component('schematic-explorer', {
         data() {
-            context.database
+            db
                 .getEventManager()
                 .addEventListener(DATABASE_EVENTS.CONNECTED, this.onDatabaseConnected.bind(this))
                 .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.onDatabaseDisconnected.bind(this));
 
             return {
-                db: context.database,
                 isDatabaseConnected: false,
                 shared: context.shared,
             };
         },
 
         mounted() {
-            if (this.db.isConnected()) {
+            if (db.isConnected()) {
                 this.onDatabaseConnected();
             }
         },
@@ -23,7 +22,7 @@ function registerSchematicExplorerComponent(app, context) {
             onDatabaseConnected() {        
                 this.isDatabaseConnected = true;
 
-                this.db.registerNotifications([
+                db.registerNotifications([
                     { type: 'Root', field: 'SchemaUpdateTrigger' },
                 ], (n) => {
                     qDebug(`[SchematicExplorer::onDatabaseConnected] Schema has changed. Finding any new schematic related entities.`);
@@ -40,7 +39,7 @@ function registerSchematicExplorerComponent(app, context) {
             },
 
             findAll(entityType) {
-                return this.db
+                return db
                     .queryAllEntities(entityType)
                     .then(result => result.entities.map(entity => {
                         return { id: entity.getId(), name: entity.getName() };
@@ -59,10 +58,10 @@ function registerSchematicExplorerComponent(app, context) {
             onSelect(entity) {
                 this.shared.selected = entity;
 
-                if (this.shared.editor) {
-                    this.shared.editor.updateOptions({ readOnly: false });
+                if (editor) {
+                    editor.updateOptions({ readOnly: false });
 
-                    this.db
+                    db
                         .read([{
                             id: entity.id,
                             field: "SourceFile"
@@ -70,12 +69,18 @@ function registerSchematicExplorerComponent(app, context) {
                         .then(readResults => {
                             const protoClass = readResults[0].getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
                             const value = protoClass.deserializeBinary(readResults[0].getValue().getValue_asU8()).getRaw();
+
+                            if (!value) {
+                                throw new Error(`[SchematicExplorer::onSelect] Source file not found for entity ${entity.id}.`);
+                            }
+                            
                             return fetch(value)
                                 .then(res => res.blob())
                                 .then(blob => blob.text())
-                                .then(source => this.shared.editor.setValue(source));
+                                .then(source => editor.setValue(source));
                         })
                         .catch(err => {
+                            editor.setValue("{}");
                             qError(`[SchematicExplorer::onSelect] ${err}`);
                         });
                 }

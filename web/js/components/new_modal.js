@@ -23,7 +23,7 @@ function registerNewModalComponent(app, context) {
 </div>`,
 
         data() {
-            context.database
+            db
                 .getEventManager()
                 .addEventListener(DATABASE_EVENTS.CONNECTED, this.onDatabaseConnected.bind(this))
                 .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.onDatabaseDisconnected.bind(this));
@@ -32,13 +32,12 @@ function registerNewModalComponent(app, context) {
                 name: "",
                 shared: context.shared,
                 schematicControllerId: null, // Models, schematics, etc. are all under a controller entity.
-                db: context.database,
                 isDatabaseConnected: false
             }
         },
         
         mounted() {
-            if (this.db.isConnected()) {
+            if (db.isConnected()) {
                 this.onDatabaseConnected();
             }
         },
@@ -47,7 +46,7 @@ function registerNewModalComponent(app, context) {
             onDatabaseConnected() {
                 this.isDatabaseConnected = true;
 
-                this.db
+                db
                     .queryAllEntities("SchematicController")
                     .then(result => {
                         if (result.entities.length > 0) {
@@ -67,7 +66,7 @@ function registerNewModalComponent(app, context) {
             },
 
             onCreateButtonPressed() {
-                this.db
+                db
                     .createEntity(this.schematicControllerId, this.name.trim(), context.entityType)
                     .catch(err => {
                         qError(`[NewModal::onCreateButtonPressed] ${err}`);

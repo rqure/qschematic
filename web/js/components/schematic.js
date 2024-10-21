@@ -147,10 +147,15 @@ class Schematic {
         this.__applyShapeConfig(model, source.model);
 
         source.model.shapes.forEach(shapeConfig => {
-            const newShape = this._modelRegistry[shapeConfig.type]();
-            
-            if (!newShape) {
+            const newShapeFn = this._modelRegistry[shapeConfig.type];
+            if (!newShapeFn) {
                 qError(`[Schematic::__generateModel] Unknown shape type: ${shapeConfig.type}`);
+                return;
+            }
+
+            const newShape = newShapeFn();
+            if (!newShape) {
+                qError(`[Schematic::__generateModel] Failed to create shape of type: ${shapeConfig.type}`);
                 return;
             }
 

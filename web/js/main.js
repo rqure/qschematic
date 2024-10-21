@@ -19,5 +19,5 @@ async function main() {
     };
 
     const schematic = new Schematic(canvas, database);
-    schematic.setIdentifer("home");
+    schematic.setIdentifer("Main");
 }

@@ -90,27 +90,31 @@ class DataManager {
             .queryAllEntities("SchematicModel")
             .then(result => {
                 const readRequests = [];
-
+                const id2Name = {};
+                
                 result.entities.forEach(model => {
                     readRequests.push({
                         id: model.getId(),
                         field: "SourceFile"
                     });
+
+                    id2Name[model.getId()] = model.getName();
                 });
 
-                return this._db.read(readRequests);
+                return this._db.read(readRequests)
+                    .then(readResults => [readResults, id2Name]);
             })
-            .then(readResults => {
+            .then((args) => {
+                const [readResults, id2Name] = args;
                 const unresolvedModels = readResults.reduce((accumulator, result) => {
                     const protoClass = result.getValue().getTypeName().split('.').reduce((o, i) => o[i], proto);
                     const id = result.getId();
-                    const name = result.getName();
                     const field = result.getField();
                     const value = protoClass.deserializeBinary(result.getValue().getValue_asU8()).getRaw();
 
                     if (!accumulator[id]) {
                         accumulator[id] = {};
-                        accumulator[id].identifier = name;
+                        accumulator[id].identifier = id2Name[id];
                     }
 
                     if (field === "SourceFile") {
