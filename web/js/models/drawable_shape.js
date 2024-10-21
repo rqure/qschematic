@@ -8,6 +8,7 @@ class DrawableShape extends Drawable {
         this._weight = 1;
     }
     
+    setColor(value) { this._color = value; return this; }
     setBorderColor(value) { this._color = value; return this; }
     setFillColor(value) { this._fillColor = value; return this; }
     setFillOpacity(value) { this._fillOpacity = value; return this; }

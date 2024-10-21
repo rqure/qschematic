@@ -29,6 +29,29 @@ class Schematic {
     }
 
     __applyShapeConfig(shape, config) {
+        /** Class Name	    CSS Variable
+            bg-primary	    --bs-primary
+            bg-secondary	--bs-secondary
+            bg-success	    --bs-success
+            bg-danger	    --bs-danger
+            bg-warning	    --bs-warning
+            bg-info	        --bs-info
+            bg-light	    --bs-light
+            bg-dark	        --bs-dark
+            bg-body	        --bs-body
+            text-primary	--bs-primary
+            text-secondary	--bs-secondary
+            text-success	--bs-success
+            text-danger	    --bs-danger
+            text-warning	--bs-warning
+            text-info	    --bs-info
+            text-light	    --bs-light
+            text-dark	    --bs-dark
+         */
+        function getBootstrapVariableColor(variableName) {
+            return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+        }
+
         if (config.location && shape.setOffset) {
             shape.setOffset(new Point(config.location.x, config.location.y));
         }
@@ -48,10 +71,20 @@ class Schematic {
         }
 
         if (config.color && shape.setColor) {
+            // if starts with -- then it is a bootstrap variable
+            if (config.color.startsWith('--')) {
+                config.color = getBootstrapVariableColor(config.color);
+            }
+
             shape.setColor(config.color);
         }
 
         if (config.fillColor && shape.setFillColor) {
+            // if starts with -- then it is a bootstrap variable
+            if (config.fillColor.startsWith('--')) {
+                config.fillColor = getBootstrapVariableColor(config.fillColor);
+            }
+
             shape.setFillColor(config.fillColor);
         }
 
@@ -110,6 +143,11 @@ class Schematic {
         }
 
         if (config.canvasBackground) {
+            // if starts with -- then it is a bootstrap variable
+            if (config.canvasBackground.startsWith('--')) {
+                config.canvasBackground = getBootstrapVariableColor(config.canvasBackground);
+            }
+
             this._canvas.element.style.backgroundColor = config.canvasBackground;
         }
 
@@ -146,7 +184,7 @@ class Schematic {
 
         this.__applyShapeConfig(model, source.model);
 
-        source.model.shapes.forEach(shapeConfig => {
+        (source.model.shapes || []).forEach(shapeConfig => {
             const newShapeFn = this._modelRegistry[shapeConfig.type];
             if (!newShapeFn) {
                 qError(`[Schematic::__generateModel] Unknown shape type: ${shapeConfig.type}`);
