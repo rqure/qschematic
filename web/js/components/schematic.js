@@ -5,6 +5,7 @@ class Schematic {
         this._model = null;
         this._db = database;
         this._dataManager = new DataManager(database);
+        this._modelSource = null;
 
         this._modelRegistry = {};
         this.__registerModel('Polygon', () => new Polygon());
@@ -29,29 +30,6 @@ class Schematic {
     }
 
     __applyShapeConfig(shape, config) {
-        /** Class Name	    CSS Variable
-            bg-primary	    --bs-primary
-            bg-secondary	--bs-secondary
-            bg-success	    --bs-success
-            bg-danger	    --bs-danger
-            bg-warning	    --bs-warning
-            bg-info	        --bs-info
-            bg-light	    --bs-light
-            bg-dark	        --bs-dark
-            bg-body	        --bs-body
-            text-primary	--bs-primary
-            text-secondary	--bs-secondary
-            text-success	--bs-success
-            text-danger	    --bs-danger
-            text-warning	--bs-warning
-            text-info	    --bs-info
-            text-light	    --bs-light
-            text-dark	    --bs-dark
-         */
-        function getBootstrapVariableColor(variableName) {
-            return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
-        }
-
         if (config.location && shape.setOffset) {
             shape.setOffset(new Point(config.location.x, config.location.y));
         }
@@ -71,20 +49,10 @@ class Schematic {
         }
 
         if (config.color && shape.setColor) {
-            // if starts with -- then it is a bootstrap variable
-            if (config.color.startsWith('--')) {
-                config.color = getBootstrapVariableColor(config.color);
-            }
-
             shape.setColor(config.color);
         }
 
         if (config.fillColor && shape.setFillColor) {
-            // if starts with -- then it is a bootstrap variable
-            if (config.fillColor.startsWith('--')) {
-                config.fillColor = getBootstrapVariableColor(config.fillColor);
-            }
-
             shape.setFillColor(config.fillColor);
         }
 
@@ -151,9 +119,9 @@ class Schematic {
             this._canvas.element.style.backgroundColor = config.canvasBackground;
         }
 
-        if (config.handlers) {
+        if (config.handlers && typeof config.handlers === 'object') {
             Object.entries(config.handlers).forEach(([entityIdField, handlerImpl]) => {
-                const callback = eval(`( function(erase, draw, value) { erase(); ${handlerImpl}; draw(); } )`)
+                const callback = eval(`( function(erase, draw, value) { erase(); try { ${handlerImpl}; } catch (e) { qError("[Schematic::__applyShapeConfig] callback failed to execute for shape ${config.type} (${entityIdField})"); } draw(); } )`)
                     .bind(shape,
                         shape.erase.bind(shape),
                         shape.draw.bind(shape, this._canvas));
@@ -161,6 +129,27 @@ class Schematic {
                 this._dataManager.notify(entityIdField, callback)
                 shape.onDestroy = () => this._dataManager.unnotify(entityIdField, callback);
             });
+        }
+
+        if (config.methods && typeof config.methods === 'object') {
+            Object.entries(config.methods).forEach(([methodName, methodImpl]) => {
+                try {
+                    const callback = eval(`( ${methodImpl} )`).bind(shape);
+                    shape[methodName] = function(...args) {
+                        try {                            
+                            callback(...args);
+                        } catch (e) {
+                            qError(`[Schematic::__applyShapeConfig] Failed to execute method: ${config.type}.${methodName}: ${e}`);
+                        }
+                    }.bind(shape);
+                } catch (e) {
+                    qError(`[Schematic::__applyShapeConfig] Failed to apply method: ${config.type}.${methodName}: ${e}`);
+                }
+            });
+
+            if (shape.init && typeof shape.init === 'function') {
+                shape.init();
+            }
         }
     }
 
@@ -217,16 +206,19 @@ class Schematic {
                     this.__registerCustomModel(identifier, source);
 
                     this._dataManager.listenForSourceChange(id, source => {
+                        qDebug(`[Schematic::__onDatabaseConnected] Model ${identifier} changed.`);
                         this.__registerCustomModel(identifier, source);
+                        this.rerender();
                     });
                 });
             })
             .then(() => this._dataManager.findSchematic(this._identifier))
             .then((args) => {
                 const [id, source] = args;
-                this.setModel(this.__generateModel(source));
+                this.setSource(source);
                 this._dataManager.listenForSourceChange(id, source => {
-                    this.setModel(this.__generateModel(source));
+                    qDebug(`[Schematic::__onDatabaseConnected] Schematic ${this._identifier} changed.`);
+                    this.setSource(source);
                 });
             })
             .catch(error => {
@@ -247,6 +239,14 @@ class Schematic {
         return this;
     }
 
+    setSource(value) {
+        this._modelSource = value;
+
+        this.rerender();
+
+        return this
+    }
+
     setModel(value) {
         if (this._model !== null) {
             this._model.erase();
@@ -255,8 +255,15 @@ class Schematic {
         }
 
         this._model = value;
-        this._model.draw(this._canvas);
+
+        if (this._model) {
+            this._model.draw(this._canvas);
+        }
 
         return this;
+    }
+
+    rerender() {
+        this.setModel(this.__generateModel(this._modelSource));
     }
 }

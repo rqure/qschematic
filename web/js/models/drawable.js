@@ -105,5 +105,7 @@ class Drawable {
         if (this.onDestroy) {
             this.onDestroy();
         }
+
+        this.setParent(null);
     }
 };

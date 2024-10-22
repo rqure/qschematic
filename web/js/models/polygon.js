@@ -7,11 +7,11 @@ class Polygon extends DrawableShape {
     get transformed_edges() {
         return this._edges.map(point => {
             // Step 1: Apply scaling relative to the origin
-            const scaledX = point.x * this.scale.x;
-            const scaledY = point.y * this.scale.y;
+            const scaledX = point.x * this.absolute_scale.x;
+            const scaledY = point.y * this.absolute_scale.y;
 
             // Step 2: Apply rotation around the origin
-            const radians = this.rotation * (Math.PI / 180);
+            const radians = this.absolute_rotation * (Math.PI / 180);
             const rotatedX = Math.cos(radians) * scaledX - Math.sin(radians) * scaledY;
             const rotatedY = Math.sin(radians) * scaledX + Math.cos(radians) * scaledY;
 
