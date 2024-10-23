@@ -8,12 +8,13 @@ class Schematic {
         this._modelSource = null;
 
         this._modelRegistry = {};
+        this.__registerModel('Circle', () => new Circle());
+        this.__registerModel('Div', () => new Div());
+        this.__registerModel('Image', () => new ImageOverlay());
         this.__registerModel('Polygon', () => new Polygon());
         this.__registerModel('Polyline', () => new Polyline());
-        this.__registerModel('Circle', () => new Circle());
-        this.__registerModel('Image', () => new ImageOverlay());
-        this.__registerModel('Text', () => new Text());
         this.__registerModel('SvgText', () => new SvgText());
+        this.__registerModel('Text', () => new Text());
 
         this._db
             .getEventManager()
@@ -102,6 +103,10 @@ class Schematic {
 
         if (config.offset && shape.setOffset) {
             shape.setOffset(new Point(config.offset.x, config.offset.y));
+        }
+
+        if (config.html && shape.setHtml) {
+            shape.setHtml(config.html);
         }
 
         if (config.edges && Array.isArray(config.edges) && shape.addEdge) {
