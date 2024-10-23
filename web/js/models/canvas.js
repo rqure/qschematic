@@ -11,15 +11,20 @@ class Canvas {
         });
         this._bottomLeft = new Point();
         this._topRight = new Point();
-        this.onmousemove = null;
+        this._mousePosition = new Point();
+        this._onmousemove = new CustomEvent();
+        this._onzoom = new CustomEvent();
 
         this.element.style.backgroundColor = "#212529";
 
         this._implementation.on('mousemove', (event) => {
-            if (this.onmousemove) {
-                const point = new Point(event.latlng.lng.toFixed(5), event.latlng.lat.toFixed(5));
-                this.onmousemove(point);
-            }
+            this._mousePosition = new Point(event.latlng.lng.toFixed(5), event.latlng.lat.toFixed(5), this.zoom);
+            this.onmousemove.callbacks.forEach(callback => callback(this._mousePosition));
+        });
+
+        this._implementation.on('zoomend', (event) => {
+            this._mousePosition = new Point(this._mousePosition.x, this._mousePosition.y, this.zoom);
+            this.onzoom.callbacks.forEach(callback => callback(this._mousePosition));
         });
     }
 
@@ -28,6 +33,14 @@ class Canvas {
     get element() { return document.getElementById(this._id); }
 
     get implementation() { return this._implementation; }
+
+    get zoom() { return this._implementation.getZoom(); }
+
+    get onmousemove() { return this._onmousemove; }
+
+    get onzoom() { return this._onzoom; }
+
+    get mousePosition() { return this._mousePosition; }
 
     moveTo(point, zoom=0) {
         this._implementation.setView([point.y, point.x], zoom);

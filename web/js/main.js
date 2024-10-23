@@ -14,9 +14,12 @@ async function main() {
         .moveTo(canvas.center, 5);
 
     const coordinates = document.getElementById('coordinates');
-    canvas.onmousemove = (point) => {
-        coordinates.innerHTML = `X: ${point.x}, Y: ${point.y}`;
-    };
+    canvas.onmousemove.add((point) => {
+        coordinates.innerHTML = `X: ${point.x}, Y: ${point.y}, Z: ${point.z}`;
+    });
+    canvas.onzoom.add((point) => {
+        coordinates.innerHTML = `X: ${point.x}, Y: ${point.y}, Z: ${point.z}`;
+    });
 
     const recenterButton = document.getElementById('recenter-btn');
     recenterButton.onclick = () => {

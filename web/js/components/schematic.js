@@ -35,10 +35,6 @@ class Schematic {
             shape.setOffset(new Point(config.location.x, config.location.y));
         }
 
-        if (config.scale && shape.setScale) {
-            shape.setScale(new Point(config.scale.x, config.scale.y));
-        }
-
         if (config.pane && config.pane.name && config.pane.level && shape.setPane) {
             shape.setPane(new Pane(
                 config.pane.name, config.pane.level
@@ -105,6 +101,21 @@ class Schematic {
             shape.setOffset(new Point(config.offset.x, config.offset.y));
         }
 
+        if (config.minZoom && shape.setMinZoom) {
+            shape.setMinZoom(config.minZoom);
+
+            const callback = (point) => {
+                if (this._canvas.zoom < config.minZoom) {
+                    shape.erase();
+                } else {
+                    shape.draw(this._canvas);
+                }
+            };
+
+            this._canvas.onzoom.add(callback)
+            shape.ondestroy.add(() => this._canvas.onzoom.remove(callback));
+        }
+
         if (config.html && shape.setHtml) {
             shape.setHtml(config.html);
         }
@@ -132,7 +143,7 @@ class Schematic {
                         shape.draw.bind(shape, this._canvas));
 
                 this._dataManager.notify(entityIdField, callback)
-                shape.onDestroy = () => this._dataManager.unnotify(entityIdField, callback);
+                shape.ondestroy.add(() => this._dataManager.unnotify(entityIdField, callback));
             });
         }
 

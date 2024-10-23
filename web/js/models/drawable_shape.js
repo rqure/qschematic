@@ -75,6 +75,11 @@ class DrawableShape extends Drawable {
 
     draw(canvas) {
         this.erase();
+
+        if (canvas.zoom < this._minZoom) {
+            return;
+        }
+
         super.draw(canvas);
         this._self = this.drawImplementation();
 

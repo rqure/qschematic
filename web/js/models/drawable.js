@@ -6,7 +6,9 @@ class Drawable {
         this._pivot = new Point();
         this._rotation = 0;
         this._scale = new Point(1, 1, 1);
+        this._minZoom = 0;
         this._parent = null;
+        this._ondestroy = new CustomEvent();
     }
 
     get parent() {
@@ -86,12 +88,17 @@ class Drawable {
 
     get pane() { return this._pane; }
 
+    get ondestroy() { return this._ondestroy;}
+
+    get minZoom() { return this._minZoom; }
+
     setParent(parent) { this._parent = parent; return this; }
     setScale(scale) { this._scale = scale; return this; }
     setPivot(pivot) { this._pivot = pivot; return this; }
     setRotation(angle) { this._rotation = angle; return this; }
     setOffset(value) { this._offset = value; return this; }
     setPane(value) { this._pane = value; return this; }
+    setMinZoom(value) { this._minZoom = value; return this; }
 
     erase() {
         this._isVisible = false;
@@ -102,9 +109,8 @@ class Drawable {
     }
 
     destroy() {
-        if (this.onDestroy) {
-            this.onDestroy();
-        }
+        this._ondestroy.callbacks.forEach(callback => callback());
+        this._ondestroy.clear();
 
         this.setParent(null);
     }
