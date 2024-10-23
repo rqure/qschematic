@@ -135,6 +135,8 @@ class Schematic {
             this._canvas.element.style.backgroundColor = config.canvasBackground;
         }
 
+        shape.setWriter(this._dataManager.writer);
+
         if (config.handlers && typeof config.handlers === 'object') {
             Object.entries(config.handlers).forEach(([entityIdField, handlerImpl]) => {
                 const callback = eval(`( function(erase, draw, value) { erase(); try { ${handlerImpl}; } catch (e) { qError("[Schematic::__applyShapeConfig] callback failed to execute for shape ${config.type} (${entityIdField})"); } draw(); } )`)

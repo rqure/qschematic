@@ -9,7 +9,10 @@ class Drawable {
         this._minZoom = 0;
         this._parent = null;
         this._ondestroy = new CustomEvent();
+        this._writer = null;
     }
+
+    get writer() { return this._writer; }
 
     get parent() {
         return this._parent;
@@ -99,6 +102,7 @@ class Drawable {
     setOffset(value) { this._offset = value; return this; }
     setPane(value) { this._pane = value; return this; }
     setMinZoom(value) { this._minZoom = value; return this; }
+    setWriter(writer) { this._writer = writer; return this; }
 
     erase() {
         this._isVisible = false;

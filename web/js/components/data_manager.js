@@ -12,6 +12,10 @@ class DataManager {
             .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
     }
 
+    get writer() {
+        return new DataWriter(this);
+    }
+
     __onDatabaseConnected() {
         qInfo("[DataManager::__onDatabaseConnected] Connected to database.");
     }
@@ -181,5 +185,44 @@ class DataManager {
             .catch(error => {
                 throw new Error(`[DataManager::findSchematic] ${error}`);
             });
+    }
+
+    write(entityIdField, value) {
+        const [entityId, field] = entityIdField.split('->');
+
+        this._db
+            .read([{
+                id: entityId,
+                field: field,
+            }])
+            .then(result => {
+                result = result[0];
+
+                const protoClass = result.getValue().getTypeName().split('.').reduce((o, i) => o[i], proto);
+                const valueContainer = protoClass.deserializeBinary(result.getValue().getValue_asU8());
+                valueContainer.setRaw(value);
+                const valueAsAny = new proto.google.protobuf.Any();
+                valueAsAny.pack(valueContainer.serializeBinary(), qMessageType(valueContainer));
+
+                return this._db.write([{
+                    id: entityId,
+                    field: field,
+                    value: valueAsAny,
+                }])
+                .then(() => qInfo(`[DataManager::write] Successfully wrote to ${entityIdField}.`))
+                .catch(error => {
+                    qError(`[DataManager::write] Error while writing to ${entityIdField}: ${error}`);
+                });
+            })
+    }
+}
+
+class DataWriter {
+    constructor(dataManager) {
+        this._dataManager = dataManager;
+    }
+
+    write(entityIdField, value) {
+        this._dataManager.write(entityIdField, value);
     }
 }
