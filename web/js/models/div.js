@@ -77,18 +77,16 @@ class Div extends DrawableShape {
     }
 
     applySmoothScaling() {
-        const element = this._marker.getElement();  // Get the HTML element for the marker (note its null for some reason...)
+        const element = this._marker.getElement();
 
         if (element) {
-            element.style.transition = 'transform 0.3s ease-in-out';  // Smooth transition
             const scaleFactor = this.zoomScaleFactor;
-            element.style.transform = `scale(${scaleFactor})`;  // Apply smooth scaling
 
-            // Also scale the inner text by finding the text container
-            const textElement = element.querySelector('.text-to-scale');  // Assuming class for text
+            // scale the inner text by finding the text container
+            const textElement = element.querySelector('.text-to-scale');
             if (textElement) {
-                textElement.style.transform = `scale(${scaleFactor})`;
-                textElement.style.transition = 'transform 0.3s ease-in-out';  // Smooth scaling for text
+                textElement.style.fontSize = `${16 * scaleFactor}px`; // Adjust base size as needed
+                textElement.style.transition = 'font-size 0.3s ease-in-out';
             }
         }
     }
@@ -111,12 +109,14 @@ class Div extends DrawableShape {
             }
         } else {
             this._marker.setIcon(icon);
-
-            if (this._scaleWithZoom) {
-                this.applySmoothScaling();
-            }
         }
 
         return this._marker;
+    }
+
+    onDraw() {
+        if (this._scaleWithZoom) {
+            this.applySmoothScaling();
+        }
     }
 }

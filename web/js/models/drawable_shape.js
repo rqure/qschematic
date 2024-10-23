@@ -89,5 +89,9 @@ class DrawableShape extends Drawable {
         }
 
         this._self.addTo(canvas.implementation);
+
+        this.onDraw();
     }
+
+    onDraw() {}
 };
