@@ -101,11 +101,23 @@ class Schematic {
             shape.setOffset(new Point(config.offset.x, config.offset.y));
         }
 
+        if (config.scaleWithZoom && shape.setScaleWithZoom) {
+            shape.setScaleWithZoom(config.scaleWithZoom);
+
+            const callback = (point) => {
+                shape.setZoom(point.z);
+                shape.draw(this._canvas);
+            };
+
+            this._canvas.onzoom.add(callback)
+            shape.ondestroy.add(() => this._canvas.onzoom.remove(callback));
+        }
+
         if (config.minZoom && shape.setMinZoom) {
             shape.setMinZoom(config.minZoom);
 
             const callback = (point) => {
-                if (this._canvas.zoom < config.minZoom) {
+                if (point.z < config.minZoom) {
                     shape.erase();
                 } else {
                     shape.draw(this._canvas);

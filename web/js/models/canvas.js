@@ -22,7 +22,7 @@ class Canvas {
             this.onmousemove.callbacks.forEach(callback => callback(this._mousePosition));
         });
 
-        this._implementation.on('zoomend', (event) => {
+        this._implementation.on('zoom', (event) => {
             this._mousePosition = new Point(this._mousePosition.x, this._mousePosition.y, this.zoom);
             this.onzoom.callbacks.forEach(callback => callback(this._mousePosition));
         });
