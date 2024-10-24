@@ -26,6 +26,8 @@ class Canvas {
             this._mousePosition = new Point(this._mousePosition.x, this._mousePosition.y, this.zoom);
             this.onzoom.callbacks.forEach(callback => callback(this._mousePosition));
         });
+
+        this._implementation.doubleClickZoom.disable(); 
     }
 
     get id() { return this._id; }

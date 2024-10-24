@@ -167,7 +167,7 @@ class Schematic {
                     const callback = eval(`( ${methodImpl} )`).bind(shape);
                     shape[methodName] = function(...args) {
                         try {                            
-                            callback(...args);
+                            return callback(...args);
                         } catch (e) {
                             qError(`[Schematic::__applyShapeConfig] Failed to execute method: ${config.type}.${methodName}: ${e}`);
                         }

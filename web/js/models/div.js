@@ -46,6 +46,18 @@ class Div extends DrawableShape {
         return this._zoom;
     }
 
+    get marker() {
+        return this._marker;
+    }
+
+    get element() {
+        if (this._marker) {
+            return this._marker.getElement();
+        }
+
+        return null;
+    }
+
     setClassName(value) {
         this._className = value;
         return this;
@@ -82,12 +94,16 @@ class Div extends DrawableShape {
         if (element) {
             const scaleFactor = this.zoomScaleFactor;
 
-            // scale the inner text by finding the text container
-            const textElement = element.querySelector('.text-to-scale');
-            if (textElement) {
-                textElement.style.fontSize = `${16 * scaleFactor}px`; // Adjust base size as needed
+            element.querySelectorAll('.component-to-scale').forEach((component) => {
+                component.style.transformOrigin = 'center right';
+                component.style.transform = `scale(${scaleFactor})`;
+                component.style.transition = 'transform 0.3s ease-in-out';
+            });
+
+            element.querySelectorAll('.text-to-scale').forEach((textElement) => {
+                textElement.style.fontSize = `${16 * scaleFactor}px`;
                 textElement.style.transition = 'font-size 0.3s ease-in-out';
-            }
+            });
         }
     }
 
