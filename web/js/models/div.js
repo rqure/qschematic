@@ -10,6 +10,7 @@ class Div extends DrawableShape {
         this._zoom = 1;
         this._marker = null;
         this.onclick = null;
+        this.onrender = null;
 
         this.ondestroy.add(() => this._marker = null);
     }
@@ -133,6 +134,10 @@ class Div extends DrawableShape {
     onDraw() {
         if (this._scaleWithZoom) {
             this.applySmoothScaling();
+        }
+
+        if (this.onrender && typeof this.onrender === 'function') {
+            this.onrender();
         }
     }
 }
