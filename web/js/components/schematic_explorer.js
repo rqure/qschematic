@@ -102,7 +102,7 @@ function registerSchematicExplorerComponent(app, context) {
         },
 
         template: `
-            <ul class="list-group list-group-flush">
+            <ul class="list-group list-group-flush overflow-y-auto">
                 <li class="list-group-item active">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">Models</h5>
