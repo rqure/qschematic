@@ -1,3 +1,13 @@
+class Navigator {
+    constructor(schematic) {
+        this._schematic = schematic;
+    }
+
+    navigateTo(identifier) {
+        this._schematic.setIdentifer(identifier);
+    }
+}
+
 class Schematic {
     constructor(canvas, database) {
         this._identifier = null;
@@ -20,6 +30,10 @@ class Schematic {
             .getEventManager()
             .addEventListener(DATABASE_EVENTS.CONNECTED, this.__onDatabaseConnected.bind(this))
             .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
+    }
+
+    get navigator() {
+        return new Navigator(this);
     }
 
     __registerModel(id, generator) {
@@ -148,6 +162,7 @@ class Schematic {
         }
 
         shape.setWriter(this._dataManager.writer);
+        shape.setNavigator(this.navigator);
 
         if (config.handlers && typeof config.handlers === 'object') {
             Object.entries(config.handlers).forEach(([entityIdField, handlerImpl]) => {

@@ -10,9 +10,12 @@ class Drawable {
         this._parent = null;
         this._ondestroy = new CustomEvent();
         this._writer = null;
+        this._navigator = null;
     }
 
     get writer() { return this._writer; }
+
+    get navigator() { return this._navigator; }
 
     get parent() {
         return this._parent;
@@ -103,6 +106,7 @@ class Drawable {
     setPane(value) { this._pane = value; return this; }
     setMinZoom(value) { this._minZoom = value; return this; }
     setWriter(writer) { this._writer = writer; return this; }
+    setNavigator(navigator) { this._navigator = navigator; return this; }
 
     erase() {
         this._isVisible = false;
