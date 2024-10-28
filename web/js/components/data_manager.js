@@ -5,6 +5,7 @@ class DataManager {
     constructor(db) {
         this._db = db;
         this._handlers = {};
+        this._tokens = [];
 
         this._db
             .getEventManager()
@@ -41,6 +42,7 @@ class DataManager {
                 const field = notification.getCurrent();
                 const protoClass = field.getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
                 const value = protoClass.deserializeBinary(field.getValue().getValue_asU8()).getRaw();
+                this._tokens.push(notification.getToken());
 
                 qTrace(`[DataManager::notify] Notifying handler for ${entityIdField}.`);
 
@@ -70,6 +72,17 @@ class DataManager {
         }
     }
 
+    unnotifyAll() {
+        if (this._tokens.length === 0) {
+            return;
+        }
+        
+        qTrace(`[DataManager::unnotifyAll] Unnotifying all.`);
+
+        this._db.unregisterNotifications(this._tokens);
+        this._tokens = [];
+    }
+
     listenForSourceChange(id, callback) {
         this._db
             .registerNotifications([{
@@ -79,6 +92,7 @@ class DataManager {
                 const field = notification.getCurrent();
                 const protoClass = field.getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
                 const value = protoClass.deserializeBinary(field.getValue().getValue_asU8()).getRaw();
+                this._tokens.push(notification.getToken());
                 return fetch(value)
                     .then(res => res.blob())
                     .then(blob => blob.text())

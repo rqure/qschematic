@@ -6,6 +6,10 @@ async function main() {
     });
     database.runInBackground(true);
 
+    const recenter = () => {
+        canvas.moveTo(canvas.center, 5);
+    }
+
     const canvas = new Canvas('schematic');
     canvas
         .setMinZoom(1)
@@ -22,10 +26,9 @@ async function main() {
     });
 
     const recenterButton = document.getElementById('recenter-btn');
-    recenterButton.onclick = () => {
-        canvas.moveTo(canvas.center, 5);
-    };
+    recenterButton.onclick = recenter;
 
     const schematic = new Schematic(canvas, database);
     schematic.setIdentifer("Main");
+    schematic.recenter = recenter;
 }

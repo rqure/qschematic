@@ -26,3 +26,18 @@ body {
 .fill-v {
     height: 100%;
 }
+
+.loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-spinner.hidden {
+    display: none;
+}

@@ -16,6 +16,7 @@ class Schematic {
         this._db = database;
         this._dataManager = new DataManager(database);
         this._modelSource = null;
+        this._loadingSpinner = new LoadingSpinner();
 
         this._modelRegistry = {};
         this.__registerModel('Circle', () => new Circle());
@@ -244,6 +245,10 @@ class Schematic {
             return;
         }
 
+        this._loadingSpinner.show();
+
+        this._dataManager.unnotifyAll();
+
         this._dataManager
             .findModels()
             .then(models => {
@@ -265,6 +270,14 @@ class Schematic {
                     qDebug(`[Schematic::__onDatabaseConnected] Schematic ${this._identifier} changed.`);
                     this.setSource(source);
                 });
+            })
+            .then(() => {
+                if( this.recenter ) {
+                    this.recenter();
+                    this._canvas.onzoom.callbacks.forEach(callback => callback(this._canvas.mousePosition));
+                }
+
+                this._loadingSpinner.hide();
             })
             .catch(error => {
                 qError(`[Schematic::__onDatabaseConnected] ${error}`);
