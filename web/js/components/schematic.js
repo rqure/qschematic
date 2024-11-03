@@ -31,6 +31,10 @@ class Schematic {
             .getEventManager()
             .addEventListener(DATABASE_EVENTS.CONNECTED, this.__onDatabaseConnected.bind(this))
             .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
+        
+        if (!this._db.isConnected()) {
+            this._loadingSpinner.show();
+        }
     }
 
     get navigator() {
@@ -285,6 +289,7 @@ class Schematic {
     }
 
     __onDatabaseDisconnected() {
+        this._loadingSpinner.show();
     }
 
     setIdentifer(value) {

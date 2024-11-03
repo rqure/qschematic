@@ -105,6 +105,11 @@ class Div extends DrawableShape {
                 textElement.style.fontSize = `${16 * scaleFactor}px`;
                 textElement.style.transition = 'font-size 0.3s ease-in-out';
             });
+
+            element.querySelectorAll('.component-to-rotate').forEach((component) => {
+                component.style.transform = `rotate(${this.absolute_rotation}deg)`;
+                component.style.transition = 'transform 0.3s ease-in-out';
+            });
         }
     }
 
