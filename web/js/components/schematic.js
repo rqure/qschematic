@@ -6,6 +6,10 @@ class Navigator {
     navigateTo(identifier) {
         this._schematic.setIdentifer(identifier);
     }
+
+    moveTo(point) {
+        this._schematic.canvas.moveTo(point, point.z);
+    }
 }
 
 class Schematic {
@@ -17,6 +21,7 @@ class Schematic {
         this._dataManager = new DataManager(database);
         this._modelSource = null;
         this._loadingSpinner = new LoadingSpinner();
+        this._alertManager = new AlertManager();
 
         this._modelRegistry = {};
         this.__registerModel('Circle', () => new Circle());
@@ -37,8 +42,16 @@ class Schematic {
         }
     }
 
+    get canvas() {
+        return this._canvas;
+    }
+
     get navigator() {
         return new Navigator(this);
+    }
+
+    get alertManager() {
+        return this._alertManager;
     }
 
     __registerModel(id, generator) {
@@ -168,10 +181,11 @@ class Schematic {
 
         shape.setWriter(this._dataManager.writer);
         shape.setNavigator(this.navigator);
+        shape.setAlertManager(this.alertManager);
 
         if (config.handlers && typeof config.handlers === 'object') {
             Object.entries(config.handlers).forEach(([entityIdField, handlerImpl]) => {
-                const callback = eval(`( function(erase, draw, value) { erase(); try { ${handlerImpl}; } catch (e) { qError("[Schematic::__applyShapeConfig] callback failed to execute for shape ${config.type} (${entityIdField})"); } draw(); } )`)
+                const callback = eval(`( function(erase, draw, value, isNotification) { erase(); try { ${handlerImpl}; } catch (e) { qError("[Schematic::__applyShapeConfig] callback failed to execute for shape ${config.type} (${entityIdField})"); console.log(e); } draw(); } )`)
                     .bind(shape,
                         shape.erase.bind(shape),
                         shape.draw.bind(shape, this._canvas));

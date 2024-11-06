@@ -17,6 +17,8 @@ class Drawable {
 
     get navigator() { return this._navigator; }
 
+    get alertManager() { return this._alertManager; }
+
     get parent() {
         return this._parent;
     }
@@ -107,6 +109,7 @@ class Drawable {
     setMinZoom(value) { this._minZoom = value; return this; }
     setWriter(writer) { this._writer = writer; return this; }
     setNavigator(navigator) { this._navigator = navigator; return this; }
+    setAlertManager(alertManager) { this._alertManager = alertManager; return this; }
 
     erase() {
         this._isVisible = false;

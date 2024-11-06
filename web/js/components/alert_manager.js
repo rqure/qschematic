@@ -1,8 +1,15 @@
 class Alert {
-    constructor(title, description, color = '#32cd32') {
+    constructor(title, description, color = '--bs-primary', onclick=null) {
         this._title = title;
         this._description = description;
+
+        if (color.startsWith('--')) {
+            color = getBootstrapVariableColor(color);
+        }
+
         this._color = color;
+
+        this.onclick = onclick;
     }
 
     get html() {
@@ -34,11 +41,18 @@ class AlertManager {
     addAlert(alert) {
         const alertElement = document.createElement('div');
         alertElement.innerHTML = alert.html;
-        const toastElement = alertElement.firstChild;
+        const toastElement = alertElement.firstElementChild;
         const toast = new bootstrap.Toast(toastElement);
         this._alertContainer.appendChild(toastElement);
         toast.show();
         this._alerts.push({ alert, toastElement });
+
+        if (alert.onclick) {
+            toastElement.querySelectorAll('.toast-body').forEach((element) => {
+                element.style.cursor = 'pointer';
+                element.addEventListener('click', alert.onclick);
+            });
+        }
 
         toastElement.addEventListener('hidden.bs.toast', () => {
             this.removeAlert(alert);

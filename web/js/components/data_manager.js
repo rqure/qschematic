@@ -46,7 +46,7 @@ class DataManager {
 
                 qTrace(`[DataManager::notify] Notifying handler for ${entityIdField}.`);
 
-                handler(value);
+                handler(value, true);
             });
         
         this._db
@@ -62,7 +62,7 @@ class DataManager {
 
                 qTrace(`[DataManager::notify] Read handler for ${entityIdField}.`);
 
-                handler(value);
+                handler(value, false);
             });
     }
 

@@ -45,7 +45,7 @@ class Canvas {
     get mousePosition() { return this._mousePosition; }
 
     moveTo(point, zoom=0) {
-        this._implementation.setView([point.y, point.x], zoom);
+        this._implementation.flyTo([point.y, point.x], zoom);
     }
 
     draw(drawable) {
