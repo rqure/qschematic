@@ -27,28 +27,31 @@ class DataManager {
     notify(entityIdField, handler) {
         qTrace(`[DataManager::notify] Registering handler for ${entityIdField}.`);
 
-        if( !this._handlers[entityIdField] ) {
+        const [entityId, field] = entityIdField.split('->');
+
+        if( !this._handlers[entityIdField] || this._handlers[entityIdField].length === 0 ) {
             this._handlers[entityIdField] = [];
+
+            this._db
+                .registerNotifications([{
+                    id: entityId,
+                    field: field,
+                }], notification => {
+                    const field = notification.getCurrent();
+                    const protoClass = field.getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
+                    const value = protoClass.deserializeBinary(field.getValue().getValue_asU8()).getRaw();
+    
+                    qTrace(`[DataManager::notify] Notifying handler for ${entityIdField}.`);
+    
+                    this._handlers[entityIdField].forEach(h => h(value, true));
+                })
+                .then(registerResult => {
+                    registerResult.tokens.forEach(token => this.__addToken(token));
+                });
         }
 
         this._handlers[entityIdField].push(handler);
 
-        const [entityId, field] = entityIdField.split('->');
-        this._db
-            .registerNotifications([{
-                id: entityId,
-                field: field,
-            }], notification => {
-                const field = notification.getCurrent();
-                const protoClass = field.getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
-                const value = protoClass.deserializeBinary(field.getValue().getValue_asU8()).getRaw();
-                this._tokens.push(notification.getToken());
-
-                qTrace(`[DataManager::notify] Notifying handler for ${entityIdField}.`);
-
-                handler(value, true);
-            });
-        
         this._db
             .read([{
                 id: entityId,
@@ -62,25 +65,32 @@ class DataManager {
 
                 qTrace(`[DataManager::notify] Read handler for ${entityIdField}.`);
 
-                handler(value, false);
+                this._handlers[entityIdField].forEach(h => h(value, false));
             });
+    }
+
+    __addToken(token) {
+        this._tokens = this._tokens.filter(t => t !== token);
+        this._tokens.push(token);
     }
 
     unnotify(entityIdField, handler) {
         if( this._handlers[entityIdField] ) {
+            qDebug(`[DataManager::unnotify] Unregistering handler for ${entityIdField}.`);
             this._handlers[entityIdField] = this._handlers[entityIdField].filter(h => h !== handler);
+        } else {
+            qWarn(`[DataManager::unnotify] No handlers for ${entityIdField}.`);
         }
     }
 
     unnotifyAll() {
-        if (this._tokens.length === 0) {
-            return;
-        }
-        
         qTrace(`[DataManager::unnotifyAll] Unnotifying all.`);
 
-        this._db.unregisterNotifications(this._tokens);
-        this._tokens = [];
+        return this._db
+            .unregisterNotifications(this._tokens)
+            .then(() => { 
+                this._tokens = [];
+            });
     }
 
     listenForSourceChange(id, callback) {
@@ -92,11 +102,14 @@ class DataManager {
                 const field = notification.getCurrent();
                 const protoClass = field.getValue().getTypeName().split('.').reduce((o,i)=> o[i], proto);
                 const value = protoClass.deserializeBinary(field.getValue().getValue_asU8()).getRaw();
-                this._tokens.push(notification.getToken());
+
                 return fetch(value)
                     .then(res => res.blob())
                     .then(blob => blob.text())
                     .then(source => callback(JSON.parse(source)));
+            })
+            .then(registerResult => {
+                registerResult.tokens.forEach(token => this.__addToken(token));
             })
             .catch(error => {
                 qError(`[DataManager::listenForSourceChange] ${error}`);

@@ -265,10 +265,9 @@ class Schematic {
 
         this._loadingSpinner.show();
 
-        this._dataManager.unnotifyAll();
-
         this._dataManager
-            .findModels()
+            .unnotifyAll()
+            .then(() => this._dataManager.findModels())
             .then(models => {
                 models.forEach(([id, identifier, source]) => {
                     this.__registerCustomModel(identifier, source);
