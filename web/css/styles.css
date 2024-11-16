@@ -43,42 +43,342 @@ body {
     display: none;
 }
 
-/* Theme-specific styles */
+/* Custom Color Variables */
+:root {
+    /* Modern Base Colors - More vibrant and cohesive */
+    --color-primary: #4f46e5;
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-info: #0ea5e9;
+    --color-neutral: #64748b;
+
+    /* State Colors - Enhanced for better visibility */
+    --device-on: #10b981;
+    --device-off: #94a3b8;
+    --device-warning: #fbbf24;
+    --device-error: #dc2626;
+
+    /* Interaction Colors */
+    --color-hover: color-mix(in srgb, var(--color-primary) 8%, transparent);
+    --color-active: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    --color-focus: color-mix(in srgb, var(--color-primary) 25%, transparent);
+
+    /* Garage Door Variables */
+    --garage-door-transition: 0.5s ease-in-out;
+    --garage-door-pattern-size: 10;
+    --garage-door-pattern-opacity: 0.3;
+
+    /* Badge Colors */
+    --badge-configure: rgba(79, 70, 229, 0.9);  /* primary color with opacity */
+    --badge-text: #ffffff;
+    --badge-glow: rgba(79, 70, 229, 0.3);
+    
+    /* Sensor Colors */
+    --sensor-bg: rgba(79, 70, 229, 0.15);
+    --sensor-border: rgba(79, 70, 229, 0.3);
+    --sensor-text: var(--bs-body-color);
+    --sensor-icon: var(--color-primary);
+    --sensor-warning: var(--color-warning);
+    --sensor-danger: var(--color-danger);
+
+    /* Configuration States */
+    --device-unconfigured-border: rgba(239, 68, 68, 0.5);
+    --device-unconfigured-glow: rgba(239, 68, 68, 0.2);
+}
+
+/* Garage Door Patterns */
+.garage-door-pattern {
+    background-image: repeating-linear-gradient(
+        45deg,
+        var(--surface-border),
+        var(--surface-border) 10px,
+        transparent 10px,
+        transparent 20px
+    );
+}
+
 [data-bs-theme="light"] {
+    --bs-body-bg: #fafafa;
+    --bs-body-color: #1e293b;
+    --bs-primary: var(--color-primary);
+    --bs-success: var(--color-success);
+    --bs-warning: var(--color-warning);
+    --bs-danger: var(--color-danger);
+    --bs-info: var(--color-info);
+    --bs-secondary: var(--color-neutral);
+
+    /* Surface Colors - Refined for light theme */
+    --surface-bg: #ffffff;
+    --surface-border: #e2e8f0;
+    --surface-hover: #f8fafc;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+    
+    --garage-door-closed: rgba(16, 185, 129, 0.8);  /* success color with opacity */
+    --garage-door-moving: rgba(251, 191, 36, 0.8);  /* warning color with opacity */
+    --garage-door-open: rgba(239, 68, 68, 0.3);     /* danger color with low opacity */
+    --garage-door-pattern: rgba(226, 232, 240, 0.15); /* light border color */
+
+    --sensor-bg: rgba(79, 70, 229, 0.1);
+    --sensor-border: rgba(79, 70, 229, 0.2);
+    --sensor-text: var(--bs-body-color);
+
+    /* Soften the light mode glow effects */
+    --device-on-glow: rgba(16, 185, 129, 0.3);
+    --device-warning-glow: rgba(251, 191, 36, 0.3);
+    --device-error-glow: rgba(239, 68, 68, 0.3);
+    --badge-configure: rgba(79, 70, 229, 0.7);
+    --badge-glow: rgba(79, 70, 229, 0.15);
+
+    --progress-bg: rgba(79, 70, 229, 0.1);
+    --progress-bar-bg: rgba(79, 70, 229, 0.85);
+
     .navbar {
-        background-color: #f8f9fa !important;
+        background-color: var(--surface-bg) !important;
+        box-shadow: var(--shadow-sm);
+        backdrop-filter: blur(8px);
     }
+
+    .btn-outline-secondary {
+        --bs-btn-color: var(--color-neutral);
+        --bs-btn-border-color: #e2e8f0;
+        --bs-btn-hover-bg: var(--surface-hover);
+        --bs-btn-hover-border-color: var(--color-neutral);
+        --bs-btn-hover-color: var(--color-primary); /* Added for better contrast */
+        --bs-btn-active-bg: var(--color-active);
+        --bs-btn-active-color: var(--color-primary);
+    }
+
+    /* Light theme specific hover effects */
+    .btn::after {
+        background: radial-gradient(circle at center, 
+                                  rgba(79, 70, 229, 0.1) 0%,
+                                  transparent 75%);
+    }
+
+    .btn:active::after {
+        background: radial-gradient(circle at center, 
+                                  rgba(79, 70, 229, 0.2) 0%,
+                                  transparent 75%);
+    }
+
+    .context-menu-item:hover {
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--color-primary);
+    }
+
     #coordinates {
         color: var(--bs-dark) !important;
     }
 }
 
 [data-bs-theme="dark"] {
+    --bs-body-bg: #0f172a;
+    --bs-body-color: #e2e8f0;
+    --bs-primary: var(--color-primary);
+    --bs-success: var(--color-success);
+    --bs-warning: var(--color-warning);
+    --bs-danger: var(--color-danger);
+    --bs-info: var(--color-info);
+    --bs-secondary: var (--color-neutral);
+
+    /* Surface Colors - Refined for dark theme */
+    --surface-bg: #1e293b;
+    --surface-border: #334155;
+    --surface-hover: #2d3a4f;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+
+    --garage-door-closed: rgba(16, 185, 129, 0.9);
+    --garage-door-moving: rgba(251, 191, 36, 0.9);
+    --garage-door-open: rgba(239, 68, 68, 0.4);
+    --garage-door-pattern: rgba(51, 65, 85, 0.25); /* dark border color */
+
+    --progress-bg: rgba(79, 70, 229, 0.15);
+    --progress-bar-bg: rgba(79, 70, 229, 0.9);
+
     .navbar {
-        background-color: #212529 !important;
+        background-color: color-mix(in srgb, var(--surface-bg) 95%, transparent) !important;
+        box-shadow: var(--shadow-sm);
+        backdrop-filter: blur(8px);
     }
+
+    .btn-outline-secondary {
+        --bs-btn-color: #94a3b8;
+        --bs-btn-border-color: #334155;
+        --bs-btn-hover-bg: var(--surface-hover);
+        --bs-btn-hover-border-color: var(--color-neutral);
+        --bs-btn-active-bg: var(--color-active);
+        --bs-btn-active-color: var(--color-primary);
+    }
+
     #coordinates {
         color: var(--bs-light) !important;
     }
 }
 
-.context-menu {
-    background: var(--bs-body-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: 24px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    padding: 0;
+/* Enhanced Button Styles */
+.btn {
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
     overflow: hidden;
 }
 
+.btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, 
+                               var(--color-hover) 0%,
+                               transparent 75%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.btn:hover::after {
+    opacity: 1;
+}
+
+.btn:active::after {
+    background: radial-gradient(circle at center, 
+                               var(--color-active) 0%,
+                               transparent 75%);
+}
+
+/* Device Status Enhancements */
+.device-on { 
+    color: var(--device-on) !important;
+    text-shadow: 0 0 8px var(--device-on-glow);
+}
+
+.device-off { 
+    color: var(--device-off) !important;
+}
+
+.device-warning { 
+    color: var(--device-warning) !important;
+    text-shadow: 0 0 10px color-mix(in srgb, var(--device-warning) 50%, transparent);
+}
+
+.device-error { 
+    color: var(--device-error) !important;
+    text-shadow: 0 0 10px color-mix(in srgb, var(--device-error) 50%, transparent);
+}
+
+/* Device Configuration States */
+.device-unconfigured {
+    border: 2px solid var(--device-unconfigured-border) !important;
+    box-shadow: 0 0 8px var(--device-unconfigured-glow);
+}
+
+/* Context Menu Refinements */
+.context-menu {
+    background: color-mix(in srgb, var(--surface-bg) 98%, transparent);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(8px);
+    padding: 4px;
+}
+
 .context-menu-item {
-    padding: 8px 24px;
-    cursor: pointer;
-    color: var(--bs-body-color);
-    transition: background-color 0.2s ease;
+    padding: 8px 16px;
+    margin: 2px;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .context-menu-item:hover {
-    background: var(--bs-primary);
-    color: white;
+    background: var(--color-hover);
+    color: var(--color-primary);
+}
+
+/* Garage Door Styles */
+.garage-door {
+    border-radius: 4px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--garage-door-closed);
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.1),
+        rgba(255, 255, 255, 0.1) 10px,
+        transparent 10px,
+        transparent 20px
+    );
+    transition: background-color 0.3s ease-in-out,
+                opacity 0.3s ease-in-out;
+}
+
+/* Sensor Badge Styles */
+.sensor-badge {
+    background-color: var(--sensor-bg) !important;
+    border: 1px solid var(--sensor-border);
+    color: var(--sensor-text) !important;
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+    backdrop-filter: blur(8px);
+}
+
+.sensor-badge i {
+    color: var(--sensor-icon);
+    margin-right: 0.5rem;
+}
+
+.sensor-badge.warning {
+    background-color: rgba(251, 191, 36, 0.15) !important;
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.sensor-badge.danger {
+    background-color: rgba(239, 68, 68, 0.15) !important;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Configure Badge */
+.configure-badge {
+    background-color: var(--badge-configure) !important;
+    color: var(--badge-text) !important;
+    box-shadow: 0 0 8px var(--badge-glow);
+    transform-origin: center !important;
+    font-size: 0.5rem;  /* Smaller font size */
+    padding: 0.2em 0.4em;  /* Slightly tighter padding */
+    min-width: 1.2em;  /* Smaller minimum width */
+    height: 1.2em;  /* Smaller height */
+    margin-top: -0.15em;  /* Adjust position for new size */
+    margin-left: 0.15em;
+}
+
+.configure-badge i {
+    font-size: 0.8em;  /* Slightly smaller than the badge font size */
+    line-height: 1;
+}
+
+/* Progress Bar Styles */
+.progress-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress {
+    background-color: var(--progress-bg) !important;
+    height: 0.3rem !important;  /* Reduced from 0.75rem */
+    border-radius: 999px !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8px);
+    overflow: hidden;
+    margin: 0 !important;
+    width: 100%;
+    transform-origin: center;
+}
+
+.progress-bar {
+    background-color: var(--progress-bar-bg) !important;
+    border-radius: 999px;
+    box-shadow: 0 0 10px var(--progress-bar-bg);
+    transition: width 0.3s ease-in-out;
 }

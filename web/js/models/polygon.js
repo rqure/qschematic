@@ -33,6 +33,7 @@ class Polygon extends DrawableShape {
 
     drawImplementation() {
         const config = {
+            className: this._className || '',
             color: this._color,
             fillColor: this._fillColor,
             fillOpacity: this._fillOpacity

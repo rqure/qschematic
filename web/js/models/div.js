@@ -1,4 +1,3 @@
-
 class Div extends DrawableShape {
     constructor() {
         super();
@@ -24,11 +23,13 @@ class Div extends DrawableShape {
     }
 
     get width() {
-        return this._width * this.zoomScaleFactor;
+        // Remove zoom scaling from base width since we handle it via CSS
+        return this._width;
     }
 
     get height() {
-        return this._height * this.zoomScaleFactor;
+        // Remove zoom scaling from base height since we handle it via CSS
+        return this._height;
     }
 
     get scaleWithZoom() {
@@ -95,19 +96,29 @@ class Div extends DrawableShape {
         if (element) {
             const scaleFactor = this.zoomScaleFactor;
 
+            // Add base container scaling
+            const container = element.querySelector('.leaflet-div-icon');
+            if (container) {
+                container.style.width = `${this._width}px`;
+                container.style.height = `${this._height}px`;
+            }
+
+            // Scale inner components
             element.querySelectorAll('.component-to-scale').forEach((component) => {
-                component.style.transformOrigin = 'center right';
+                component.style.transformOrigin = 'center';
                 component.style.transform = `scale(${scaleFactor})`;
                 component.style.transition = 'transform 0.3s ease-in-out';
             });
 
             element.querySelectorAll('.text-to-scale').forEach((textElement) => {
-                textElement.style.fontSize = `${16 * scaleFactor}px`;
-                textElement.style.transition = 'font-size 0.3s ease-in-out';
+                textElement.style.transformOrigin = 'center';
+                textElement.style.transform = `scale(${scaleFactor})`;
+                textElement.style.transition = 'transform 0.3s ease-in-out';
             });
 
             element.querySelectorAll('.component-to-rotate').forEach((component) => {
-                component.style.transform = `rotate(${this.absolute_rotation}deg)`;
+                component.style.transformOrigin = 'center';
+                component.style.transform = `rotate(${this.absolute_rotation}deg) scale(${scaleFactor})`;
                 component.style.transition = 'transform 0.3s ease-in-out';
             });
         }
@@ -118,6 +129,7 @@ class Div extends DrawableShape {
             className: this._className,
             html: this._html,
             iconSize: [this.width, this.height],
+            iconAnchor: [this.width / 2, this.height / 2]  // Center the icon
         });
 
         if (!this._marker) {
