@@ -85,6 +85,14 @@ body {
     /* Configuration States */
     --device-unconfigured-border: rgba(239, 68, 68, 0.5);
     --device-unconfigured-glow: rgba(239, 68, 68, 0.2);
+
+    /* Sensor Theme Colors */
+    --temp-color: #f97316;  /* Warm orange */
+    --temp-bg: rgba(249, 115, 22, 0.15);
+    --temp-border: rgba(249, 115, 22, 0.3);
+    --humid-color: #0ea5e9;  /* Cool blue */
+    --humid-bg: rgba(14, 165, 233, 0.15);
+    --humid-border: rgba(14, 165, 233, 0.3);
 }
 
 /* Garage Door Patterns */
@@ -247,6 +255,15 @@ body {
                                transparent 75%);
 }
 
+/* Navigation Button Styles */
+.btn.text-to-scale {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.3s ease-in-out,
+                background-color 0.2s ease-in-out,
+                border-color 0.2s ease-in-out,
+                color 0.2s ease-in-out;
+}
+
 /* Device Status Enhancements */
 .device-on { 
     color: var(--device-on) !important;
@@ -271,6 +288,31 @@ body {
 .device-unconfigured {
     border: 2px solid var(--device-unconfigured-border) !important;
     box-shadow: 0 0 8px var(--device-unconfigured-glow);
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.device-unconfigured.btn {
+    cursor: not-allowed !important;
+}
+
+.device-unconfigured::before {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 8px;  /* Smaller size */
+    height: 8px; /* Smaller size */
+    border: 1.5px solid var(--device-unconfigured-border); /* Slightly thinner border */
+    border-right-color: transparent;
+    border-radius: 50%;
+    opacity: 0.8;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* Context Menu Refinements */
@@ -313,27 +355,56 @@ body {
 
 /* Sensor Badge Styles */
 .sensor-badge {
-    background-color: var(--sensor-bg) !important;
-    border: 1px solid var(--sensor-border);
-    color: var(--sensor-text) !important;
-    padding: 0.5rem 0.75rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;  /* Added to spread items apart */
+    padding: 0.75rem 1.25rem;  /* Increased padding */
     font-weight: 500;
     backdrop-filter: blur(8px);
+    background: linear-gradient(135deg, 
+        var(--temp-bg) 0%, 
+        var(--temp-bg) 49.9%, 
+        var(--humid-bg) 50.1%, 
+        var(--humid-bg) 100%
+    ) !important;
+    border: none;
+    overflow: hidden;
 }
 
-.sensor-badge i {
-    color: var(--sensor-icon);
-    margin-right: 0.5rem;
+/* Remove the ::before pseudo-element that contained the '/' separator */
+.sensor-badge::before {
+    display: none;
 }
 
-.sensor-badge.warning {
-    background-color: rgba(251, 191, 36, 0.15) !important;
-    border-color: rgba(251, 191, 36, 0.3);
+.sensor-temp, .sensor-humid {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;  /* Increased gap between icon and value */
 }
 
-.sensor-badge.danger {
-    background-color: rgba(239, 68, 68, 0.15) !important;
-    border-color: rgba(239, 68, 68, 0.3);
+.sensor-badge::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 1px solid transparent;
+    border-image: linear-gradient(135deg, 
+        var(--temp-border) 0%, 
+        var(--temp-border) 49.9%, 
+        var(--humid-border) 50.1%, 
+        var(--humid-border) 100%
+    ) 1;
+}
+
+.sensor-temp {
+    color: var(--temp-color) !important;
+}
+
+.sensor-humid {
+    color: var(--humid-color) !important;
 }
 
 /* Configure Badge */
