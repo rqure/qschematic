@@ -2,8 +2,8 @@ class LoadingSpinner {
     constructor() {
         this.spinner = document.createElement('div');
         this.spinner.classList.add('loading-spinner');
-        this.spinner.innerHTML = `<div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+        this.spinner.innerHTML = `<div class="loading-spinner">
+            <div class="spinner"></div>
         </div>`;
         this.isVisible = false;
     }

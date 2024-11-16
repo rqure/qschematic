@@ -28,6 +28,7 @@ body {
     height: 100%;
 }
 
+/* Loading Spinner Refinements */
 .loading-spinner {
     position: fixed;
     top: 50%;
@@ -35,12 +36,33 @@ body {
     transform: translate(-50%, -50%);
     z-index: 1050;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 1rem;
 }
 
 .loading-spinner.hidden {
     display: none;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--surface-border);
+    border-top-color: var(--bs-primary);
+    border-radius: 50%;
+    animation: spinner-rotate 0.8s cubic-bezier(0.6, 0.2, 0.4, 0.9) infinite,
+               spinner-fade 1.6s ease-in-out infinite;
+}
+
+@keyframes spinner-rotate {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spinner-fade {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
 }
 
 /* Custom Color Variables */
@@ -87,12 +109,23 @@ body {
     --device-unconfigured-glow: rgba(239, 68, 68, 0.2);
 
     /* Sensor Theme Colors */
-    --temp-color: #f97316;  /* Warm orange */
-    --temp-bg: rgba(249, 115, 22, 0.15);
-    --temp-border: rgba(249, 115, 22, 0.3);
-    --humid-color: #0ea5e9;  /* Cool blue */
-    --humid-bg: rgba(14, 165, 233, 0.15);
-    --humid-border: rgba(14, 165, 233, 0.3);
+    --temp-color: var(--color-primary);     /* Use our primary indigo for consistency */
+    --temp-bg: color-mix(in srgb, var(--color-primary) 8%, transparent);
+    --temp-border: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    --humid-color: var(--color-info);       /* Use our info blue for humidity */
+    --humid-bg: color-mix(in srgb, var(--color-info) 8%, transparent);
+    --humid-border: color-mix(in srgb, var(--color-info) 15%, transparent);
+
+    /* Sensor Status Colors */
+    --temp-warning: var(--color-warning);
+    --temp-danger: var(--color-danger);
+    --humid-warning: var(--color-info);
+    --humid-danger: var(--color-primary);
+
+    /* Architectural Elements */
+    --floor-fill: rgba(100, 116, 139, 0.03);    /* Even more subtle neutral */
+    --floor-border: rgba(100, 116, 139, 0.1);   /* Softer outline */
+    --wall-color: rgba(71, 85, 105, 0.75);      /* Keep walls prominent */
 }
 
 /* Garage Door Patterns */
@@ -107,7 +140,7 @@ body {
 }
 
 [data-bs-theme="light"] {
-    --bs-body-bg: #fafafa;
+    --bs-body-bg: #f8fafc;                      /* Slightly cooler white */
     --bs-body-color: #1e293b;
     --bs-primary: var(--color-primary);
     --bs-success: var(--color-success);
@@ -141,6 +174,11 @@ body {
 
     --progress-bg: rgba(79, 70, 229, 0.1);
     --progress-bar-bg: rgba(79, 70, 229, 0.85);
+
+    /* Architectural Surfaces - Light Theme */
+    --floor-fill: rgba(241, 245, 249, 0.2);     /* Much lighter fill */
+    --floor-border: rgba(148, 163, 184, 0.15);  /* Softer edge */
+    --wall-color: rgba(71, 85, 105, 0.8);       /* Keep walls visible */
 
     .navbar {
         background-color: var(--surface-bg) !important;
@@ -205,6 +243,11 @@ body {
 
     --progress-bg: rgba(79, 70, 229, 0.15);
     --progress-bar-bg: rgba(79, 70, 229, 0.9);
+
+    /* Architectural Surfaces - Dark Theme */
+    --floor-fill: rgba(30, 41, 59, 0.15);       /* More subtle fill */
+    --floor-border: rgba(71, 85, 105, 0.2);     /* Softer edge */
+    --wall-color: rgba(148, 163, 184, 0.75);    /* Keep contrast */
 
     .navbar {
         background-color: color-mix(in srgb, var(--surface-bg) 95%, transparent) !important;
@@ -362,13 +405,9 @@ body {
     padding: 0.75rem 1.25rem;  /* Increased padding */
     font-weight: 500;
     backdrop-filter: blur(8px);
-    background: linear-gradient(135deg, 
-        var(--temp-bg) 0%, 
-        var(--temp-bg) 49.9%, 
-        var(--humid-bg) 50.1%, 
-        var(--humid-bg) 100%
-    ) !important;
-    border: none;
+    background: var(--surface-bg) !important;
+    border: 1px solid var(--surface-border);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
 }
 
@@ -381,22 +420,22 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;  /* Increased gap between icon and value */
+    transition: all 0.2s ease-in-out;
 }
 
+.sensor-temp i, .sensor-humid i {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Remove the gradient border */
 .sensor-badge::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border: 1px solid transparent;
-    border-image: linear-gradient(135deg, 
-        var(--temp-border) 0%, 
-        var(--temp-border) 49.9%, 
-        var(--humid-border) 50.1%, 
-        var(--humid-border) 100%
-    ) 1;
+    display: none;
+}
+
+/* New hover effect */
+.sensor-badge:hover {
+    border-color: var(--surface-border);
+    box-shadow: var(--shadow-md);
 }
 
 .sensor-temp {
@@ -452,4 +491,56 @@ body {
     border-radius: 999px;
     box-shadow: 0 0 10px var(--progress-bar-bg);
     transition: width 0.3s ease-in-out;
+}
+
+/* Component Enhancements */
+.component-to-scale .btn {
+    aspect-ratio: 1;
+    padding: 0;
+    border-width: 1.5px;
+    background: color-mix(in srgb, var(--surface-bg) 98%, transparent);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(0, 0, 0, 0.05);   /* Add subtle border */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.component-to-scale .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2),
+                0 0 0 1px var(--bs-primary);      /* More prominent border */
+    border-color: var(--bs-primary);
+}
+
+.component-to-scale .btn:active {
+    transform: translateY(0);
+}
+
+.component-to-scale .btn i {
+    font-size: 1.2em;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+}
+
+/* Enhance the on/off states */
+.component-to-scale .device-on {
+    color: var(--device-on) !important;
+    text-shadow: 0 0 10px var(--device-on-glow);
+    filter: drop-shadow(0 0 5px var(--device-on-glow));
+}
+
+.component-to-scale .device-off {
+    color: var(--device-off) !important;
+    opacity: 0.8;
+}
+
+/* Make unconfigured state more visible */
+.component-to-scale .device-unconfigured {
+    border: 1.5px dashed var(--device-unconfigured-border) !important;
+    background: color-mix(in srgb, var(--device-unconfigured-border) 5%, transparent);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 0.9; }
 }
