@@ -126,6 +126,42 @@ body {
     --floor-fill: rgba(100, 116, 139, 0.03);    /* Even more subtle neutral */
     --floor-border: rgba(100, 116, 139, 0.1);   /* Softer outline */
     --wall-color: rgba(71, 85, 105, 0.75);      /* Keep walls prominent */
+
+    /* Progress Bar Colors - Updated for better integration */
+    --progress-bg: color-mix(in srgb, var(--surface-border) 30%, transparent);
+    --progress-bar-closed: var(--color-neutral);
+    --progress-bar-moving: var(--color-primary);
+    --progress-bar-glow: color-mix(in srgb, var(--color-neutral) 20%, transparent);
+
+    /* Updated Garage Door Colors */
+    --garage-door-closed: var(--color-primary);
+    --garage-door-open: var(--bs-body-bg);    /* Match background exactly */
+    --garage-door-moving: var(--color-info);
+    --garage-door-pattern: rgba(255, 255, 255, 0.05);
+    --garage-door-opacity-closed: 0.95;
+    --garage-door-opacity-open: 1;            /* Fully opaque to hide underlying elements */
+    --garage-door-opacity-moving: 0.85;
+
+    /* Door State Colors */
+    --door-locked: var(--device-on);
+    --door-unlocked: var(--device-warning);
+    --door-open: var(--device-error);
+    
+    /* Door Opacities and Effects */
+    --door-opacity-locked: 0.85;
+    --door-opacity-unlocked: 0.65;
+    --door-opacity-open: 0.4;
+    --door-glow-intensity: 0.2;
+    --door-border-width: 2px;
+    --door-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Door Colors and Effects */
+    --door-closed: var(--color-primary);
+    --door-open: var(--bs-body-bg);    /* Match background exactly */
+    --door-opacity-closed: 0.95;
+    --door-opacity-open: 1;            /* Fully opaque to hide underlying elements */
+    --door-pattern: rgba(255, 255, 255, 0.05);
+    --door-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Garage Door Patterns */
@@ -156,10 +192,10 @@ body {
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
     
-    --garage-door-closed: rgba(16, 185, 129, 0.8);  /* success color with opacity */
-    --garage-door-moving: rgba(251, 191, 36, 0.8);  /* warning color with opacity */
-    --garage-door-open: rgba(239, 68, 68, 0.3);     /* danger color with low opacity */
-    --garage-door-pattern: rgba(226, 232, 240, 0.15); /* light border color */
+    --garage-door-closed: var(--color-primary);
+    --garage-door-moving: var(--color-info);
+    --garage-door-open: var(--bs-body-bg);    /* Match canvas background exactly */
+    --garage-door-pattern: rgba(226, 232, 240, 0.15);
 
     --sensor-bg: rgba(79, 70, 229, 0.1);
     --sensor-border: rgba(79, 70, 229, 0.2);
@@ -172,8 +208,8 @@ body {
     --badge-configure: rgba(79, 70, 229, 0.7);
     --badge-glow: rgba(79, 70, 229, 0.15);
 
-    --progress-bg: rgba(79, 70, 229, 0.1);
-    --progress-bar-bg: rgba(79, 70, 229, 0.85);
+    --progress-bg: rgba(203, 213, 225, 0.3);
+    --progress-bar-glow: rgba(100, 116, 139, 0.15);
 
     /* Architectural Surfaces - Light Theme */
     --floor-fill: rgba(241, 245, 249, 0.2);     /* Much lighter fill */
@@ -236,13 +272,13 @@ body {
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
 
-    --garage-door-closed: rgba(16, 185, 129, 0.9);
-    --garage-door-moving: rgba(251, 191, 36, 0.9);
-    --garage-door-open: rgba(239, 68, 68, 0.4);
-    --garage-door-pattern: rgba(51, 65, 85, 0.25); /* dark border color */
+    --garage-door-closed: var(--color-primary);
+    --garage-door-moving: var(--color-info);
+    --garage-door-open: var(--bs-body-bg);    /* Match canvas background exactly */
+    --garage-door-pattern: rgba(51, 65, 85, 0.25);
 
-    --progress-bg: rgba(79, 70, 229, 0.15);
-    --progress-bar-bg: rgba(79, 70, 229, 0.9);
+    --progress-bg: rgba(51, 65, 85, 0.3);
+    --progress-bar-glow: rgba(148, 163, 184, 0.15);
 
     /* Architectural Surfaces - Dark Theme */
     --floor-fill: rgba(30, 41, 59, 0.15);       /* More subtle fill */
@@ -382,18 +418,84 @@ body {
 
 /* Garage Door Styles */
 .garage-door {
-    border-radius: 4px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
     background-color: var(--garage-door-closed);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    mix-blend-mode: normal;                   /* Remove multiply blend mode */
+    background-blend-mode: normal;           /* Changed from overlay to normal */
+}
+
+.garage-door::before {
+    content: '';
+    position: absolute;
+    inset: 0;
     background-image: repeating-linear-gradient(
         45deg,
-        rgba(255, 255, 255, 0.1),
-        rgba(255, 255, 255, 0.1) 10px,
+        var(--garage-door-pattern),
+        var(--garage-door-pattern) 10px,
         transparent 10px,
         transparent 20px
     );
-    transition: background-color 0.3s ease-in-out,
-                opacity 0.3s ease-in-out;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.garage-door::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.1),
+        transparent 50%,
+        rgba(0, 0, 0, 0.1)
+    );
+}
+
+/* Door Styles */
+.door {
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    background-color: var(--door-closed);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4px);
+    transition: var(--door-transition);
+    position: relative;
+    overflow: hidden;
+    mix-blend-mode: normal;
+    background-blend-mode: normal;
+}
+
+.door::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        45deg,
+        var(--door-pattern),
+        var(--door-pattern) 10px,
+        transparent 10px,
+        transparent 20px
+    );
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.door::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.1),
+        transparent 50%,
+        rgba(0, 0, 0, 0.1)
+    );
 }
 
 /* Sensor Badge Styles */
@@ -465,32 +567,60 @@ body {
     line-height: 1;
 }
 
-/* Progress Bar Styles */
+/* Progress Bar Styles - Modernized */
 .progress-container {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0.5rem;
 }
 
 .progress {
+    width: 100%;
+    height: 0.35rem !important;
     background-color: var(--progress-bg) !important;
-    height: 0.3rem !important;  /* Reduced from 0.75rem */
     border-radius: 999px !important;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(8px);
     overflow: hidden;
     margin: 0 !important;
-    width: 100%;
     transform-origin: center;
+    backdrop-filter: blur(4px);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
 .progress-bar {
-    background-color: var(--progress-bar-bg) !important;
-    border-radius: 999px;
-    box-shadow: 0 0 10px var(--progress-bar-bg);
-    transition: width 0.3s ease-in-out;
+    height: 100%;
+    background-color: var(--progress-bar-closed) !important;
+    border-radius: inherit;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px var(--progress-bar-glow);
+    position: relative;
+    overflow: hidden;
+    opacity: 0.9;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        transparent 100%
+    );
+    transform: translateX(-100%);
+    animation: progress-shine 2s ease-in-out infinite;
+}
+
+@keyframes progress-shine {
+    to {
+        transform: translateX(100%);
+    }
 }
 
 /* Component Enhancements */
