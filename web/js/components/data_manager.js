@@ -241,6 +241,9 @@ class DataManager {
                     qError(`[DataManager::write] Error while writing to ${entityIdField}: ${error}`);
                 });
             })
+            .catch(error => {
+                qError(`[DataManager::write] Error while reading from ${entityIdField}: ${error}`);
+            });
     }
 }
 

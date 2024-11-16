@@ -15,7 +15,7 @@ class Canvas {
         this._onmousemove = new CustomEvent();
         this._onzoom = new CustomEvent();
 
-        this.element.style.backgroundColor = "#212529";
+        this.element.style.backgroundColor = "var(--bs-body-bg)";
 
         this._implementation.on('mousemove', (event) => {
             this._mousePosition = new Point(event.latlng.lng.toFixed(5), event.latlng.lat.toFixed(5), this.zoom);
@@ -84,5 +84,10 @@ class Canvas {
         let x = (this._bottomLeft.x + this._topRight.x) / 2;
         let y = (this._bottomLeft.y + this._topRight.y) / 2;
         return new Point(x, y);
+    }
+
+    setBackgroundColor(color) {
+        this.element.style.backgroundColor = color;
+        return this;
     }
 };

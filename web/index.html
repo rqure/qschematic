@@ -22,11 +22,15 @@
 <body>
     <div id="desktop" class="container-fluid fill-v">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container-fluid">
-                <button type="button" id="recenter-btn" class="btn btn-outline-secondary">Recenter</button>
-
-                <div class="ml-auto">
-                    <span id="coordinates" class="navbar-text text-light">X: -, Y: -, Z: -</span>
+            <div class="container-fluid d-flex justify-content-between">
+                <div class="d-flex">
+                    <button type="button" id="recenter-btn" class="btn btn-outline-secondary">Recenter</button>
+                    <button type="button" id="theme-toggle-btn" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-sun"></i>
+                    </button>
+                </div>
+                <div>
+                    <span id="coordinates" class="navbar-text" style="min-width: 200px; display: inline-block;">X: -, Y: -, Z: -</span>
                 </div>
             </div>
         </nav>

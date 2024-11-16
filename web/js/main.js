@@ -28,6 +28,30 @@ async function main() {
     const recenterButton = document.getElementById('recenter-btn');
     recenterButton.onclick = recenter;
 
+    // Theme toggling
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const icon = themeToggleBtn.querySelector('i');
+    
+    // Load saved theme or default to dark
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+
+    themeToggleBtn.onclick = () => {
+        const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-bs-theme', newTheme);
+        icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        localStorage.setItem('theme', newTheme);
+        
+        // Update canvas background using Bootstrap colors
+        canvas.setBackgroundColor(`var(--bs-body-bg)`);
+    };
+
+    // Set initial canvas background using Bootstrap colors
+    canvas.setBackgroundColor(`var(--bs-body-bg)`);
+
     const schematic = new Schematic(canvas, database);
     schematic.setIdentifer("Main");
     schematic.recenter = recenter;
