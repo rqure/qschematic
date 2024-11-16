@@ -1,14 +1,8 @@
 class Alert {
-    constructor(title, description, color = '--bs-primary', onclick=null) {
+    constructor(title, description, iconClass = 'fa-circle-info', onclick = null) {
         this._title = title;
         this._description = description;
-
-        if (color.startsWith('--')) {
-            color = getBootstrapVariableColor(color);
-        }
-
-        this._color = color;
-
+        this._iconClass = iconClass;
         this.onclick = onclick;
     }
 
@@ -16,15 +10,20 @@ class Alert {
         return `
         <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
-                <svg class="rounded me-2" width="20" height="20" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img">
-                    <rect fill="${this._color}" width="100%" height="100%" />
-                </svg>
+                <i class="fas ${this._iconClass} me-2 toast-icon"></i>
                 <strong class="me-auto">${this._title}</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
             <div class="toast-body">
                 ${this._description}
             </div>
+            ${this.onclick ? `
+            <div class="toast-footer">
+                <small class="text-muted">
+                    <i class="fas fa-arrow-right me-1"></i>
+                    Click for more details
+                </small>
+            </div>` : ''}
         </div>`;
     }
 }
@@ -48,9 +47,17 @@ class AlertManager {
         this._alerts.push({ alert, toastElement });
 
         if (alert.onclick) {
-            toastElement.querySelectorAll('.toast-body').forEach((element) => {
-                element.style.cursor = 'pointer';
-                element.addEventListener('click', alert.onclick);
+            // Make both body and footer clickable
+            ['toast-body', 'toast-footer'].forEach(className => {
+                toastElement.querySelectorAll(`.${className}`).forEach((element) => {
+                    element.style.cursor = 'pointer';
+                    element.addEventListener('click', alert.onclick);
+                    // Add focus listeners for keyboard navigation
+                    element.addEventListener('focus', () => toastElement.classList.add('has-focus'));
+                    element.addEventListener('blur', () => toastElement.classList.remove('has-focus'));
+                    // Make the elements focusable
+                    element.setAttribute('tabindex', '0');
+                });
             });
         }
 

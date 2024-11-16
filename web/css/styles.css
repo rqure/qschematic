@@ -162,6 +162,13 @@ body {
     --door-opacity-open: 1;            /* Fully opaque to hide underlying elements */
     --door-pattern: rgba(255, 255, 255, 0.05);
     --door-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Alert/Toast Colors */
+    --toast-bg: color-mix(in srgb, var(--surface-bg) 98%, transparent);
+    --toast-border: var(--surface-border);
+    --toast-shadow: var(--shadow-md);
+    --toast-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --toast-icon-size: 16px;
 }
 
 /* Garage Door Patterns */
@@ -673,4 +680,64 @@ body {
 @keyframes pulse {
     0%, 100% { opacity: 0.7; }
     50% { opacity: 0.9; }
+}
+
+/* Toast/Alert Styles */
+.toast-container {
+    z-index: 1100;
+}
+
+.toast {
+    background: var(--toast-bg);
+    border: 1px solid var(--toast-border);
+    border-radius: 12px;
+    box-shadow: var(--toast-shadow);
+    backdrop-filter: blur(8px);
+    transition: var(--toast-transition);
+    min-width: 280px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.toast:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Add focus state styles */
+.toast.has-focus .toast-body,
+.toast-body:focus,
+.toast-footer:focus {
+    background: var(--surface-hover);
+    outline: none;
+}
+
+.toast-body {
+    padding: 1rem;
+    color: var(--bs-body-color);
+    font-size: 0.925rem;
+    cursor: default;
+    transition: background-color 0.2s ease;
+}
+
+.toast-body[style*="cursor: pointer"]:hover {
+    background: var(--surface-hover);
+}
+
+.toast-footer {
+    padding: 0.5rem 1rem;
+    background: color-mix(in srgb, var(--surface-hover) 50%, transparent);
+    border-top: 1px solid var(--toast-border);
+    font-size: 0.8rem;
+    transition: background-color 0.2s ease;
+}
+
+/* Improve keyboard navigation visual feedback */
+.toast:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.toast:hover .toast-footer {
+    background: var(--surface-hover);
 }
