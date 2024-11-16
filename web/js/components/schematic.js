@@ -215,6 +215,17 @@ class Schematic {
                 shape.init();
             }
         }
+
+        if (config.contextMenu && typeof config.contextMenu === 'object') {
+            Object.entries(config.contextMenu).forEach(([label, handlerImpl]) => {
+                try {
+                    const callback = eval(`( ${handlerImpl} )`).bind(shape);
+                    shape.addContextMenuItem(label, callback);
+                } catch (e) {
+                    qError(`[Schematic::__applyShapeConfig] Failed to add context menu item: ${label}: ${e}`);
+                }
+            });
+        }
     }
 
     __generateModel(source) {

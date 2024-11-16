@@ -1,4 +1,3 @@
-
 /** Class Name	    CSS Variable
     bg-primary	    --bs-primary
     bg-secondary	--bs-secondary
@@ -30,6 +29,8 @@ class DrawableShape extends Drawable {
         this._fillColor = '#f03';
         this._fillOpacity = 0.5;
         this._weight = 1;
+        this._contextMenu = null;
+        this._contextMenuItems = [];
     }
     
     setColor(value) {
@@ -62,6 +63,48 @@ class DrawableShape extends Drawable {
     setFillOpacity(value) { this._fillOpacity = value; return this; }
     setWeight(value) { this._weight = value; return this; }
 
+    addContextMenuItem(label, callback) {
+        this._contextMenuItems.push({ label, callback });
+        return this;
+    }
+
+    __showContextMenu(event) {
+        if (this._contextMenu) {
+            this._contextMenu.remove();
+        }
+
+        // Create context menu
+        this._contextMenu = document.createElement('div');
+        this._contextMenu.className = 'context-menu';
+        this._contextMenu.style.position = 'fixed';
+        this._contextMenu.style.left = `${event.originalEvent.clientX}px`;
+        this._contextMenu.style.top = `${event.originalEvent.clientY}px`;
+        this._contextMenu.style.zIndex = 1000;
+
+        // Add menu items
+        this._contextMenuItems.forEach(item => {
+            const menuItem = document.createElement('div');
+            menuItem.className = 'context-menu-item';
+            menuItem.textContent = item.label;
+            menuItem.onclick = () => {
+                item.callback.call(this);
+                this._contextMenu.remove();
+            };
+            this._contextMenu.appendChild(menuItem);
+        });
+
+        document.body.appendChild(this._contextMenu);
+
+        // Close menu when clicking outside
+        const closeMenu = (e) => {
+            if (!this._contextMenu.contains(e.target)) {
+                this._contextMenu.remove();
+                document.removeEventListener('click', closeMenu);
+            }
+        };
+        setTimeout(() => document.addEventListener('click', closeMenu), 0);
+    }
+
     drawImplementation() {}
 
     erase() {
@@ -89,6 +132,13 @@ class DrawableShape extends Drawable {
         }
 
         this._self.addTo(canvas.implementation);
+
+        if (this._self && this._contextMenuItems.length > 0) {
+            this._self.on('contextmenu', (event) => {
+                event.originalEvent.preventDefault();
+                this.__showContextMenu(event);
+            });
+        }
 
         this.onDraw();
     }
