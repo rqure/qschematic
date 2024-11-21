@@ -225,7 +225,12 @@ class DataManager {
             .then(result => {
                 result = result[0];
 
-                const protoClass = result.getValue().getTypeName().split('.').reduce((o, i) => o[i], proto);
+                let protoClass = result.getValue().getTypeName().split('.').reduce((o, i) => o[i], proto);
+                if (protoClass === proto.qdb.Transformation) {
+                    qInfo(`[DataManager::write] Transformation detected. Overriding as String.`);
+                    protoClass = proto.qdb.String;
+                }
+
                 const valueContainer = protoClass.deserializeBinary(result.getValue().getValue_asU8());
                 valueContainer.setRaw(value);
                 const valueAsAny = new proto.google.protobuf.Any();
