@@ -2,7 +2,7 @@ module github.com/rqure/qschematic
 
 go 1.22
 
-require github.com/rqure/qdb v1.2.85
+require github.com/rqure/qdb v1.2.87
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
