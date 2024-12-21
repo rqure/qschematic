@@ -26,7 +26,7 @@ function registerEditorContainerComponent(app, context) {
                 const reader = new FileReader();
                 reader.onload = async (e) => { 
                     const content = await bufferToBase64(new Uint8Array(e.target.result));
-                    const value = new proto.qdb.BinaryFile();
+                    const value = new proto.protobufs.BinaryFile();
                     value.setRaw(content);
                     const valueAsAny = new proto.google.protobuf.Any();
                     valueAsAny.pack(value.serializeBinary(), qMessageType(value));

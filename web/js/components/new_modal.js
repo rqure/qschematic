@@ -25,26 +25,25 @@ function registerNewModalComponent(app, context) {
         data() {
             db
                 .getEventManager()
-                .addEventListener(DATABASE_EVENTS.CONNECTED, this.onDatabaseConnected.bind(this))
-                .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.onDatabaseDisconnected.bind(this));
+                .addEventListener(Q_STORE_EVENTS.CONNECTED, this.onStoreConnected.bind(this))
+                .addEventListener(Q_STORE_EVENTS.DISCONNECTED, this.onStoreDisconnected.bind(this));
 
             return {
                 name: "",
                 shared: context.shared,
                 schematicControllerId: null, // Models, schematics, etc. are all under a controller entity.
-                isDatabaseConnected: false
             }
         },
         
         mounted() {
             if (db.isConnected()) {
-                this.onDatabaseConnected();
+                this.onStoreConnected();
             }
         },
 
         methods: {
-            onDatabaseConnected() {
-                this.isDatabaseConnected = true;
+            onStoreConnected() {
+                
 
                 db
                     .queryAllEntities("SchematicController")
@@ -60,8 +59,8 @@ function registerNewModalComponent(app, context) {
                     });
             },
 
-            onDatabaseDisconnected() {
-                this.isDatabaseConnected = false;
+            onStoreDisconnected() {
+                
                 this.schematicControllerId = null;
             },
 

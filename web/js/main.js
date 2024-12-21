@@ -1,7 +1,7 @@
 async function main() {
     CURRENT_LOG_LEVEL=LOG_LEVELS.DEBUG;
     
-    const database = new DatabaseInteractor({
+    const database = QEntityStore({
         port: ":20000"
     });
     database.runInBackground(true);

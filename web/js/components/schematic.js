@@ -34,8 +34,8 @@ class Schematic {
 
         this._db
             .getEventManager()
-            .addEventListener(DATABASE_EVENTS.CONNECTED, this.__onDatabaseConnected.bind(this))
-            .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
+            .addEventListener(Q_STORE_EVENTS.CONNECTED, this.__onDatabaseConnected.bind(this))
+            .addEventListener(Q_STORE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
         
         if (!this._db.isConnected()) {
             this._loadingSpinner.show();
@@ -269,7 +269,7 @@ class Schematic {
         return model;
     }
 
-    __onDatabaseConnected() {
+    __onStoreConnected() {
         if (this._identifier === null) {
             return;
         }
@@ -312,7 +312,7 @@ class Schematic {
             });
     }
 
-    __onDatabaseDisconnected() {
+    __onStoreDisconnected() {
         this._loadingSpinner.show();
     }
 
@@ -320,7 +320,7 @@ class Schematic {
         this._identifier = value;
 
         if( this._db.isConnected() ) {
-            this.__onDatabaseConnected();
+            this.__onStoreConnected();
         }
 
         return this;

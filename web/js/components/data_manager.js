@@ -9,19 +9,19 @@ class DataManager {
 
         this._db
             .getEventManager()
-            .addEventListener(DATABASE_EVENTS.CONNECTED, this.__onDatabaseConnected.bind(this))
-            .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
+            .addEventListener(Q_STORE_EVENTS.CONNECTED, this.__onDatabaseConnected.bind(this))
+            .addEventListener(Q_STORE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
     }
 
     get writer() {
         return new DataWriter(this);
     }
 
-    __onDatabaseConnected() {
+    __onStoreConnected() {
         qInfo("[DataManager::__onDatabaseConnected] Connected to database.");
     }
 
-    __onDatabaseDisconnected() {
+    __onStoreDisconnected() {
     }
 
     notify(entityIdField, handler) {
@@ -226,9 +226,9 @@ class DataManager {
                 result = result[0];
 
                 let protoClass = result.getValue().getTypeName().split('.').reduce((o, i) => o[i], proto);
-                if (protoClass === proto.qdb.Transformation) {
+                if (protoClass === proto.protobufs.Transformation) {
                     qInfo(`[DataManager::write] Transformation detected. Overriding as String.`);
-                    protoClass = proto.qdb.String;
+                    protoClass = proto.protobufs.String;
                 }
 
                 const valueContainer = protoClass.deserializeBinary(result.getValue().getValue_asU8());

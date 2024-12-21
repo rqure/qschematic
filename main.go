@@ -5,19 +5,22 @@ import (
 	"os"
 
 	qdb "github.com/rqure/qdb/src"
+	"github.com/rqure/qlib/pkg/app"
+	"github.com/rqure/qlib/pkg/app/workers"
+	"github.com/rqure/qlib/pkg/data/store"
 )
 
 func getDatabaseAddress() string {
-	addr := os.Getenv("QDB_ADDR")
+	addr := os.Getenv("Q_ADDR")
 	if addr == "" {
-		addr = "redis:6379"
+		addr = "ws://webgateway:20000/ws"
 	}
 
 	return addr
 }
 
 func getWebServiceAddress() string {
-	addr := os.Getenv("QDB_WEBSERVICE_ADDR")
+	addr := os.Getenv("Q_WEB_ADDR")
 	if addr == "" {
 		addr = "0.0.0.0:20002"
 	}
@@ -26,7 +29,7 @@ func getWebServiceAddress() string {
 }
 
 func main() {
-	db := qdb.NewRedisDatabase(qdb.RedisDatabaseConfig{
+	db := store.NewWeb(store.WebConfig{
 		Address: getDatabaseAddress(),
 	})
 
@@ -34,37 +37,29 @@ func main() {
 		http.ServeFile(wr, r, "./web/editor.html")
 	})
 
-	dbWorker := qdb.NewDatabaseWorker(db)
+	storeWorker := workers.NewStore(db)
 	webServiceWorker := qdb.NewWebServiceWorker(getWebServiceAddress())
-	leaderElectionWorker := qdb.NewLeaderElectionWorker(db)
+	leadershipWorker := workers.NewLeadership(db)
 
-	schemaValidator := qdb.NewSchemaValidator(db)
-	schemaValidator.AddEntity("SchematicController")
-	schemaValidator.AddEntity("Schematic", "SourceFile")
-	schemaValidator.AddEntity("SchematicModel", "SourceFile")
+	schemaValidator := leadershipWorker.GetEntityFieldValidator()
+	schemaValidator.RegisterEntityFields("SchematicController")
+	schemaValidator.RegisterEntityFields("Schematic", "SourceFile")
+	schemaValidator.RegisterEntityFields("SchematicModel", "SourceFile")
 
-	dbWorker.Signals.SchemaUpdated.Connect(qdb.Slot(schemaValidator.ValidationRequired))
-	dbWorker.Signals.Connected.Connect(qdb.Slot(schemaValidator.ValidationRequired))
-	leaderElectionWorker.AddAvailabilityCriteria(func() bool {
-		return dbWorker.IsConnected() && schemaValidator.IsValid()
-	})
-
-	dbWorker.Signals.Connected.Connect(qdb.Slot(leaderElectionWorker.OnDatabaseConnected))
-	dbWorker.Signals.Disconnected.Connect(qdb.Slot(leaderElectionWorker.OnDatabaseDisconnected))
+	storeWorker.Connected.Connect(leadershipWorker.OnStoreConnected)
+	storeWorker.Disconnected.Connect(leadershipWorker.OnStoreDisconnected)
 
 	// Create a new application configuration
 	config := qdb.ApplicationConfig{
 		Name: "schematic",
 		Workers: []qdb.IWorker{
-			dbWorker,
-			leaderElectionWorker,
+			storeWorker,
+			leadershipWorker,
 			webServiceWorker,
 		},
 	}
 
-	// Create a new application
-	app := qdb.NewApplication(config)
+	app := app.NewApplication(config)
 
-	// Execute the application
 	app.Execute()
 }

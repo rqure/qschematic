@@ -1,4 +1,4 @@
-const db = new DatabaseInteractor({
+const db = QEntityStore({
     port: ":20000"
 });
 

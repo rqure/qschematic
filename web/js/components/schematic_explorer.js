@@ -3,24 +3,23 @@ function registerSchematicExplorerComponent(app, context) {
         data() {
             db
                 .getEventManager()
-                .addEventListener(DATABASE_EVENTS.CONNECTED, this.onDatabaseConnected.bind(this))
-                .addEventListener(DATABASE_EVENTS.DISCONNECTED, this.onDatabaseDisconnected.bind(this));
+                .addEventListener(Q_STORE_EVENTS.CONNECTED, this.onStoreConnected.bind(this))
+                .addEventListener(Q_STORE_EVENTS.DISCONNECTED, this.onStoreDisconnected.bind(this));
 
             return {
-                isDatabaseConnected: false,
                 shared: context.shared,
             };
         },
 
         mounted() {
             if (db.isConnected()) {
-                this.onDatabaseConnected();
+                this.onStoreConnected();
             }
         },
 
         methods: {
-            onDatabaseConnected() {        
-                this.isDatabaseConnected = true;
+            onStoreConnected() {        
+                
 
                 db.registerNotifications([
                     { type: 'Root', field: 'SchemaUpdateTrigger' },
@@ -34,8 +33,8 @@ function registerSchematicExplorerComponent(app, context) {
                 this.findAll('Schematic').then(schematics => this.shared.schematics = schematics.toSorted((a, b) => ('' + a.name).localeCompare(b.name)));
             },
 
-            onDatabaseDisconnected() {
-                this.isDatabaseConnected = false;
+            onStoreDisconnected() {
+                
             },
 
             findAll(entityType) {
@@ -106,22 +105,22 @@ function registerSchematicExplorerComponent(app, context) {
                 <li class="list-group-item active">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">Models</h5>
-                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-model-modal" :disabled="!isDatabaseConnected">New</button>
+                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-model-modal">New</button>
                     </div>
                 </li>
                 <li class="list-group-item list-group-item-action list-group-item-secondary d-flex justify-content-between align-items-start" v-for="model in shared.models" v-bind:class="{ 'active': (model === shared.selected) }" @click="onSelect(model)">
                     {{ model.name }}
-                    <button type="button" class="btn btn-light" @click="onDelete(model)" :disabled="!isDatabaseConnected">🗑</button>
+                    <button type="button" class="btn btn-light" @click="onDelete(model)">🗑</button>
                 </li>
                 <li class="list-group-item active">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">Schematics</h5>
-                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-schematic-modal" :disabled="!isDatabaseConnected">New</button>
+                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-schematic-modal">New</button>
                     </div>
                 </li>
                 <li class="list-group-item list-group-item-action list-group-item-secondary d-flex justify-content-between align-items-start" v-for="schematic in shared.schematics" v-bind:class="{ 'active': (schematic === shared.selected) }" @click="onSelect(schematic)">
                     {{ schematic.name }}
-                    <button type="button" class="btn btn-light" @click="onDelete(schematic)" :disabled="!isDatabaseConnected">🗑</button>
+                    <button type="button" class="btn btn-light" @click="onDelete(schematic)">🗑</button>
                 </li>
             </ul>
         `
