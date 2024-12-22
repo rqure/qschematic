@@ -4,13 +4,12 @@ import (
 	"net/http"
 	"os"
 
-	qdb "github.com/rqure/qdb/src"
 	"github.com/rqure/qlib/pkg/app"
 	"github.com/rqure/qlib/pkg/app/workers"
 	"github.com/rqure/qlib/pkg/data/store"
 )
 
-func getDatabaseAddress() string {
+func getStoreAddress() string {
 	addr := os.Getenv("Q_ADDR")
 	if addr == "" {
 		addr = "ws://webgateway:20000/ws"
@@ -29,17 +28,17 @@ func getWebServiceAddress() string {
 }
 
 func main() {
-	db := store.NewWeb(store.WebConfig{
-		Address: getDatabaseAddress(),
+	s := store.NewWeb(store.WebConfig{
+		Address: getStoreAddress(),
 	})
 
 	http.HandleFunc("/editor", func(wr http.ResponseWriter, r *http.Request) {
 		http.ServeFile(wr, r, "./web/editor.html")
 	})
 
-	storeWorker := workers.NewStore(db)
-	webServiceWorker := qdb.NewWebServiceWorker(getWebServiceAddress())
-	leadershipWorker := workers.NewLeadership(db)
+	storeWorker := workers.NewStore(s)
+	webServiceWorker := workers.NewWeb(getWebServiceAddress())
+	leadershipWorker := workers.NewLeadership(s)
 
 	schemaValidator := leadershipWorker.GetEntityFieldValidator()
 	schemaValidator.RegisterEntityFields("SchematicController")
@@ -49,17 +48,9 @@ func main() {
 	storeWorker.Connected.Connect(leadershipWorker.OnStoreConnected)
 	storeWorker.Disconnected.Connect(leadershipWorker.OnStoreDisconnected)
 
-	// Create a new application configuration
-	config := qdb.ApplicationConfig{
-		Name: "schematic",
-		Workers: []qdb.IWorker{
-			storeWorker,
-			leadershipWorker,
-			webServiceWorker,
-		},
-	}
-
-	app := app.NewApplication(config)
-
-	app.Execute()
+	a := app.NewApplication("schematic")
+	a.AddWorker(storeWorker)
+	a.AddWorker(leadershipWorker)
+	a.AddWorker(webServiceWorker)
+	a.Execute()
 }
