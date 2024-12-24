@@ -7,6 +7,27 @@ async function main() {
     
     Q_STORE.runInBackground(true);
 
+    // Add scaling function
+    const applyResolutionScaling = () => {
+        const targetWidth = 1920;
+        const targetHeight = 1080;
+        const currentWidth = window.innerWidth;
+        const currentHeight = window.innerHeight;
+        
+        const scaleX = currentWidth / targetWidth;
+        const scaleY = currentHeight / targetHeight;
+        const scale = Math.min(scaleX, scaleY);
+        
+        document.body.style.transform = `scale(${scale})`;
+        document.body.style.transformOrigin = 'top left';
+        document.body.style.width = `${targetWidth}px`;
+        document.body.style.height = `${targetHeight}px`;
+    };
+
+    // Apply scaling on load and window resize
+    applyResolutionScaling();
+    window.addEventListener('resize', applyResolutionScaling);
+
     const recenter = () => {
         canvas.moveTo(canvas.center, 5);
     }

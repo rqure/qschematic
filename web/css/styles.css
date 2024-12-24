@@ -6,11 +6,14 @@ body {
     font-size: 100%;
     color: var(--bs-body-color);
     background-color: var(--bs-body-bg);
+    position: absolute;
+    transform-origin: top left;
+    overflow: hidden;
 }
 
 #desktop {
-    width: 100%;
-    
+    width: 1920px;  /* Set fixed width */
+    height: 1080px; /* Set fixed height */
     margin: 0;
     padding: 0;
     
