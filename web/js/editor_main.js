@@ -1,4 +1,4 @@
-const db = QEntityStore({
+const Q_STORE = new QEntityStore({
     port: ":20000"
 });
 
@@ -9,7 +9,7 @@ async function main() {
 
     const app = Vue.createApp({});
 
-    db.runInBackground(true);
+    Q_STORE.runInBackground(true);
 
     const shared = Vue.reactive({
         selected: null,

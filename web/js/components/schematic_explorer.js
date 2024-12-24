@@ -1,7 +1,7 @@
 function registerSchematicExplorerComponent(app, context) {
     return app.component('schematic-explorer', {
         data() {
-            db
+            Q_STORE
                 .getEventManager()
                 .addEventListener(Q_STORE_EVENTS.CONNECTED, this.onStoreConnected.bind(this))
                 .addEventListener(Q_STORE_EVENTS.DISCONNECTED, this.onStoreDisconnected.bind(this));
@@ -12,16 +12,14 @@ function registerSchematicExplorerComponent(app, context) {
         },
 
         mounted() {
-            if (db.isConnected()) {
+            if (Q_STORE.isConnected()) {
                 this.onStoreConnected();
             }
         },
 
         methods: {
             onStoreConnected() {        
-                
-
-                db.registerNotifications([
+                Q_STORE.registerNotifications([
                     { type: 'Root', field: 'SchemaUpdateTrigger' },
                 ], (n) => {
                     qDebug(`[SchematicExplorer::onDatabaseConnected] Schema has changed. Finding any new schematic related entities.`);
@@ -38,7 +36,7 @@ function registerSchematicExplorerComponent(app, context) {
             },
 
             findAll(entityType) {
-                return db
+                return Q_STORE
                     .queryAllEntities(entityType)
                     .then(result => result.entities.map(entity => {
                         return { id: entity.getId(), name: entity.getName() };
@@ -57,7 +55,7 @@ function registerSchematicExplorerComponent(app, context) {
                         editor.updateOptions({ readOnly: true });
                     }
 
-                    db
+                    Q_STORE
                         .deleteEntity(entity.id)
                         .then(() => {
                             qDebug(`[SchematicExplorer::onDelete] Successfully deleted entity ${entity.id}.`);
@@ -74,7 +72,7 @@ function registerSchematicExplorerComponent(app, context) {
                 if (editor) {
                     editor.updateOptions({ readOnly: false });
 
-                    db
+                    Q_STORE
                         .read([{
                             id: entity.id,
                             field: "SourceFile"

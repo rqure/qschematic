@@ -23,7 +23,7 @@ function registerNewModalComponent(app, context) {
 </div>`,
 
         data() {
-            db
+            Q_STORE
                 .getEventManager()
                 .addEventListener(Q_STORE_EVENTS.CONNECTED, this.onStoreConnected.bind(this))
                 .addEventListener(Q_STORE_EVENTS.DISCONNECTED, this.onStoreDisconnected.bind(this));
@@ -36,7 +36,7 @@ function registerNewModalComponent(app, context) {
         },
         
         mounted() {
-            if (db.isConnected()) {
+            if (Q_STORE.isConnected()) {
                 this.onStoreConnected();
             }
         },
@@ -45,7 +45,7 @@ function registerNewModalComponent(app, context) {
             onStoreConnected() {
                 
 
-                db
+                Q_STORE
                     .queryAllEntities("SchematicController")
                     .then(result => {
                         if (result.entities.length > 0) {
@@ -65,7 +65,7 @@ function registerNewModalComponent(app, context) {
             },
 
             onCreateButtonPressed() {
-                db
+                Q_STORE
                     .createEntity(this.schematicControllerId, this.name.trim(), context.entityType)
                     .catch(err => {
                         qError(`[NewModal::onCreateButtonPressed] ${err}`);

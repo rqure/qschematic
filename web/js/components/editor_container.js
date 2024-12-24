@@ -31,7 +31,7 @@ function registerEditorContainerComponent(app, context) {
                     const valueAsAny = new proto.google.protobuf.Any();
                     valueAsAny.pack(value.serializeBinary(), qMessageType(value));
         
-                    db.write([ 
+                    Q_STORE.write([ 
                         {
                             id: this.shared.selected.id,
                             field: 'SourceFile',
