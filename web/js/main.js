@@ -74,6 +74,16 @@ async function main() {
     // Set initial canvas background using Bootstrap colors
     canvas.setBackgroundColor(`var(--bs-body-bg)`);
 
+    // Add navbar scroll effect
+    const navbar = document.querySelector('.navbar');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 10) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+
     const schematic = new Schematic(canvas, Q_STORE);
     schematic.setIdentifer("Main");
     schematic.recenter = recenter;
