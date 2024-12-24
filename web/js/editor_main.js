@@ -5,7 +5,7 @@ const db = QEntityStore({
 let editor = null;
 
 async function main() {
-    CURRENT_LOG_LEVEL = LOG_LEVELS.DEBUG;
+    Q_CURRENT_LOG_LEVEL = Q_LOG_LEVELS.DEBUG;
 
     const app = Vue.createApp({});
 

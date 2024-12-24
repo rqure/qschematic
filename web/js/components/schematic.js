@@ -13,12 +13,12 @@ class Navigator {
 }
 
 class Schematic {
-    constructor(canvas, database) {
+    constructor(canvas, store) {
         this._identifier = null;
         this._canvas = canvas;
         this._model = null;
-        this._db = database;
-        this._dataManager = new DataManager(database);
+        this._store = store;
+        this._dataManager = new DataManager(store);
         this._modelSource = null;
         this._loadingSpinner = new LoadingSpinner();
         this._alertManager = new AlertManager();
@@ -32,12 +32,12 @@ class Schematic {
         this.__registerModel('SvgText', () => new SvgText());
         this.__registerModel('Text', () => new Text());
 
-        this._db
+        this._store
             .getEventManager()
-            .addEventListener(Q_STORE_EVENTS.CONNECTED, this.__onDatabaseConnected.bind(this))
-            .addEventListener(Q_STORE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
+            .addEventListener(Q_STORE_EVENTS.CONNECTED, this.__onStoreConnected.bind(this))
+            .addEventListener(Q_STORE_EVENTS.DISCONNECTED, this.__onStoreDisconnected.bind(this));
         
-        if (!this._db.isConnected()) {
+        if (!this._store.isConnected()) {
             this._loadingSpinner.show();
         }
     }
@@ -284,7 +284,7 @@ class Schematic {
                     this.__registerCustomModel(identifier, source);
 
                     this._dataManager.listenForSourceChange(id, source => {
-                        qDebug(`[Schematic::__onDatabaseConnected] Model ${identifier} changed.`);
+                        qDebug(`[Schematic::__onStoreConnected] Model ${identifier} changed.`);
                         this.__registerCustomModel(identifier, source);
                         this.rerender();
                     });
@@ -295,7 +295,7 @@ class Schematic {
                 const [id, source] = args;
                 this.setSource(source);
                 this._dataManager.listenForSourceChange(id, source => {
-                    qDebug(`[Schematic::__onDatabaseConnected] Schematic ${this._identifier} changed.`);
+                    qDebug(`[Schematic::__onStoreConnected] Schematic ${this._identifier} changed.`);
                     this.setSource(source);
                 });
             })
@@ -308,7 +308,7 @@ class Schematic {
                 this._loadingSpinner.hide();
             })
             .catch(error => {
-                qError(`[Schematic::__onDatabaseConnected] ${error}`);
+                qError(`[Schematic::__onStoreConnected] ${error}`);
             });
     }
 
@@ -319,7 +319,7 @@ class Schematic {
     setIdentifer(value) {
         this._identifier = value;
 
-        if( this._db.isConnected() ) {
+        if( this._store.isConnected() ) {
             this.__onStoreConnected();
         }
 

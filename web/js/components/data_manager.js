@@ -1,16 +1,16 @@
 /**
- * Used to manage the data from the database and provide it to the schematic (and models under it).
+ * Used to manage the data from the Store and provide it to the schematic (and models under it).
  */
 class DataManager {
-    constructor(db) {
-        this._db = db;
+    constructor(store) {
+        this._store = store;
         this._handlers = {};
         this._tokens = [];
 
-        this._db
+        this._store
             .getEventManager()
-            .addEventListener(Q_STORE_EVENTS.CONNECTED, this.__onDatabaseConnected.bind(this))
-            .addEventListener(Q_STORE_EVENTS.DISCONNECTED, this.__onDatabaseDisconnected.bind(this));
+            .addEventListener(Q_STORE_EVENTS.CONNECTED, this.__onStoreConnected.bind(this))
+            .addEventListener(Q_STORE_EVENTS.DISCONNECTED, this.__onStoreDisconnected.bind(this));
     }
 
     get writer() {
@@ -18,7 +18,7 @@ class DataManager {
     }
 
     __onStoreConnected() {
-        qInfo("[DataManager::__onDatabaseConnected] Connected to database.");
+        qInfo("[DataManager::__onStoreConnected] Connected to Store.");
     }
 
     __onStoreDisconnected() {
@@ -32,7 +32,7 @@ class DataManager {
         if( !this._handlers[entityIdField] || this._handlers[entityIdField].length === 0 ) {
             this._handlers[entityIdField] = [];
 
-            this._db
+            this._store
                 .registerNotifications([{
                     id: entityId,
                     field: field,
@@ -52,7 +52,7 @@ class DataManager {
 
         this._handlers[entityIdField].push(handler);
 
-        this._db
+        this._store
             .read([{
                 id: entityId,
                 field: field,
@@ -86,7 +86,7 @@ class DataManager {
     unnotifyAll() {
         qTrace(`[DataManager::unnotifyAll] Unnotifying all.`);
 
-        return this._db
+        return this._store
             .unregisterNotifications(this._tokens)
             .then(() => { 
                 this._tokens = [];
@@ -94,7 +94,7 @@ class DataManager {
     }
 
     listenForSourceChange(id, callback) {
-        this._db
+        this._store
             .registerNotifications([{
                 id: id,
                 field: "SourceFile",
@@ -117,7 +117,7 @@ class DataManager {
     }
 
     findModels() {
-        return this._db
+        return this._store
             .queryAllEntities("SchematicModel")
             .then(result => {
                 const readRequests = [];
@@ -132,7 +132,7 @@ class DataManager {
                     id2Name[model.getId()] = model.getName();
                 });
 
-                return this._db.read(readRequests)
+                return this._store.read(readRequests)
                     .then(readResults => [readResults, id2Name]);
             })
             .then((args) => {
@@ -187,7 +187,7 @@ class DataManager {
     }
 
     findSchematic(schematicId) {
-        return this._db
+        return this._store
             .queryAllEntities("Schematic")
             .then(schematics => {
                 schematics = schematics.entities.filter(schematic => schematic.getName() === schematicId);
@@ -196,7 +196,7 @@ class DataManager {
                     return Promise.reject("Schematic not found.");
                 }
 
-                return this._db.read([{
+                return this._store.read([{
                     id: schematics[0].getId(),
                     field: "SourceFile"
                 }]);
@@ -217,7 +217,7 @@ class DataManager {
     write(entityIdField, value) {
         const [entityId, field] = entityIdField.split('->');
 
-        this._db
+        this._store
             .read([{
                 id: entityId,
                 field: field,
@@ -236,7 +236,7 @@ class DataManager {
                 const valueAsAny = new proto.google.protobuf.Any();
                 valueAsAny.pack(valueContainer.serializeBinary(), qMessageType(valueContainer));
 
-                return this._db.write([{
+                return this._store.write([{
                     id: entityId,
                     field: field,
                     value: valueAsAny,

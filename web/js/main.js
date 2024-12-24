@@ -1,10 +1,11 @@
+const Q_STORE = new QEntityStore({
+    port: ":20000"
+});
+
 async function main() {
-    CURRENT_LOG_LEVEL=LOG_LEVELS.DEBUG;
+    Q_CURRENT_LOG_LEVEL=Q_LOG_LEVELS.DEBUG;
     
-    const database = QEntityStore({
-        port: ":20000"
-    });
-    database.runInBackground(true);
+    Q_STORE.runInBackground(true);
 
     const recenter = () => {
         canvas.moveTo(canvas.center, 5);
@@ -52,7 +53,7 @@ async function main() {
     // Set initial canvas background using Bootstrap colors
     canvas.setBackgroundColor(`var(--bs-body-bg)`);
 
-    const schematic = new Schematic(canvas, database);
+    const schematic = new Schematic(canvas, Q_STORE);
     schematic.setIdentifer("Main");
     schematic.recenter = recenter;
 }
