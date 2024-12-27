@@ -99,28 +99,34 @@ function registerSchematicExplorerComponent(app, context) {
         },
 
         template: `
-            <ul class="list-group list-group-flush overflow-y-auto">
-                <li class="list-group-item active">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">Models</h5>
-                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-model-modal">New</button>
+            <div class="scroll-container">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item active">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">Models</h5>
+                            <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-model-modal">New</button>
+                        </div>
+                    </li>
+                    <div class="explorer-section">
+                        <li class="list-group-item list-group-item-action list-group-item-secondary d-flex justify-content-between align-items-start" v-for="model in shared.models" v-bind:class="{ 'active': (model === shared.selected) }" @click="onSelect(model)">
+                            {{ model.name }}
+                            <button type="button" class="btn btn-light" @click="onDelete(model)">🗑</button>
+                        </li>
                     </div>
-                </li>
-                <li class="list-group-item list-group-item-action list-group-item-secondary d-flex justify-content-between align-items-start" v-for="model in shared.models" v-bind:class="{ 'active': (model === shared.selected) }" @click="onSelect(model)">
-                    {{ model.name }}
-                    <button type="button" class="btn btn-light" @click="onDelete(model)">🗑</button>
-                </li>
-                <li class="list-group-item active">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">Schematics</h5>
-                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-schematic-modal">New</button>
+                    <li class="list-group-item active">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">Schematics</h5>
+                            <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#new-schematic-modal">New</button>
+                        </div>
+                    </li>
+                    <div class="explorer-section">
+                        <li class="list-group-item list-group-item-action list-group-item-secondary d-flex justify-content-between align-items-start" v-for="schematic in shared.schematics" v-bind:class="{ 'active': (schematic === shared.selected) }" @click="onSelect(schematic)">
+                            {{ schematic.name }}
+                            <button type="button" class="btn btn-light" @click="onDelete(schematic)">🗑</button>
+                        </li>
                     </div>
-                </li>
-                <li class="list-group-item list-group-item-action list-group-item-secondary d-flex justify-content-between align-items-start" v-for="schematic in shared.schematics" v-bind:class="{ 'active': (schematic === shared.selected) }" @click="onSelect(schematic)">
-                    {{ schematic.name }}
-                    <button type="button" class="btn btn-light" @click="onDelete(schematic)">🗑</button>
-                </li>
-            </ul>
+                </ul>
+            </div>
         `
     });
 }

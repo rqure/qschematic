@@ -10,6 +10,9 @@ class Div extends DrawableShape {
         this._marker = null;
         this.onclick = null;
         this.onrender = null;
+        this._styles = new Map();
+        this._animations = new Map();
+        this._styleElement = null;
 
         this.ondestroy.add(() => this._marker = null);
     }
@@ -90,6 +93,18 @@ class Div extends DrawableShape {
         return this;
     }
 
+    setStyles(styles) {
+        if (!styles) return this;
+        this._styles = new Map(Object.entries(styles));
+        return this;
+    }
+
+    setAnimations(animations) {
+        if (!animations) return this;
+        this._animations = new Map(Object.entries(animations));
+        return this;
+    }
+
     applySmoothScaling() {
         const element = this._marker.getElement();
 
@@ -124,6 +139,42 @@ class Div extends DrawableShape {
         }
     }
 
+    __applyStyles() {
+        if (!this.element || (this._styles.size === 0 && this._animations.size === 0)) return;
+
+        // Create or get style element
+        let styleId = `style-${this._id}`;
+        this._styleElement = document.getElementById(styleId);
+        if (!this._styleElement) {
+            this._styleElement = document.createElement('style');
+            this._styleElement.id = styleId;
+            document.head.appendChild(this._styleElement);
+        }
+
+        // Build CSS content
+        let css = '';
+
+        // Add animations
+        this._animations.forEach((keyframes, name) => {
+            css += `@keyframes ${name} {
+                ${Object.entries(keyframes).map(([key, value]) => 
+                    `${key} { ${Object.entries(value).map(([prop, val]) => 
+                        `${prop}: ${val}`).join('; ')} }`
+                ).join('\n')}
+            }\n`;
+        });
+
+        // Add styles
+        this._styles.forEach((rules, selector) => {
+            css += `#${this.element.id} ${selector} {
+                ${Object.entries(rules).map(([prop, value]) => 
+                    `${prop}: ${value}`).join(';\n    ')}
+            }\n`;
+        });
+
+        this._styleElement.textContent = css;
+    }
+
     drawImplementation() {
         const icon = L.divIcon({
             className: this._className,
@@ -145,6 +196,7 @@ class Div extends DrawableShape {
             this._marker.setIcon(icon);
         }
 
+        this.__applyStyles();
         return this._marker;
     }
 
@@ -156,5 +208,13 @@ class Div extends DrawableShape {
         if (this.onrender && typeof this.onrender === 'function') {
             this.onrender();
         }
+    }
+
+    destroy() {
+        if (this._styleElement) {
+            this._styleElement.remove();
+            this._styleElement = null;
+        }
+        super.destroy();
     }
 }

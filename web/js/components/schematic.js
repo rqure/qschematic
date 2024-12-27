@@ -179,6 +179,14 @@ class Schematic {
             this._canvas.element.style.backgroundColor = config.canvasBackground;
         }
 
+        if (config.styles && shape.setStyles) {
+            shape.setStyles(config.styles);
+        }
+ 
+        if (config.animations && shape.setAnimations) {
+            shape.setAnimations(config.animations);
+        }
+
         shape.setWriter(this._dataManager.writer);
         shape.setNavigator(this.navigator);
         shape.setAlertManager(this.alertManager);
